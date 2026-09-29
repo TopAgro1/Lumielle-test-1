@@ -37,6 +37,34 @@ Todo está en el objeto `LM` al principio del `<script>` de `index.html`:
 5. **Envío gratis desde $60.000** sale de la descripción del producto; confirmá que es el umbral configurado en la tienda.
 6. **Prueba social**: hoy hay 3 pedidos, todos de prueba y anulados. Por eso la portada muestra la garantía en lugar de estrellas y la sección de opiniones queda oculta hasta tener reseñas reales.
 
+## Imágenes con ChatGPT (gpt-image-2)
+
+Claude genera y edita imágenes con la API de imágenes de OpenAI: pedile "hacé una foto del producto en…" y usa la skill `gpt-image-2` (`.claude/skills/gpt-image-2`, adaptada de [AgustinGoniDev/gpt-image-2-skill-claude-code](https://github.com/AgustinGoniDev/gpt-image-2-skill-claude-code)), que tiene la guía de prompts, un preset para Lumielle y el script `scripts/generar_imagen.py` (Python 3, sin instalar nada). Las imágenes quedan en `imagenes/`.
+
+Para que funcione en Claude Code en la web, en la configuración del entorno (menú del entorno en la barra de título de la sesión → Edit):
+
+1. **Clave**: cargá `OPENAI_API_KEY` con tu clave de OpenAI, en "API credentials" si aparece o como variable de entorno. La toman las sesiones nuevas. No la pegues en el chat ni en un archivo del repo.
+2. **Red**: en Network access, agregá `api.openai.com` a los dominios permitidos, y `cdn.shopify.com` para usar las fotos de la tienda como referencia.
+3. La cuenta de OpenAI necesita saldo. Si la API pide verificar la organización, se hace en platform.openai.com → Settings → Organization → General.
+
+Uso directo del script:
+
+```sh
+# Con la foto real del producto como referencia, formato 4:5 para el feed de Meta
+python3 scripts/generar_imagen.py "The product from Image 1 on light marble, soft morning light" \
+  --image "https://cdn.shopify.com/s/files/1/1030/6922/1143/files/sadoer-pedestal.webp?v=1790197592&width=1200" \
+  --input-fidelity high --size 4:5 --out imagenes/marmol.png
+
+# Tres variantes en calidad media para elegir, con el prompt en un archivo
+python3 scripts/generar_imagen.py --prompt-file prompt.txt -n 3 --quality medium --size 9:16
+
+# Modelos de imagen de la cuenta, y todas las opciones
+python3 scripts/generar_imagen.py --list-models
+python3 scripts/generar_imagen.py --help
+```
+
+Tamaños: `1:1`, `4:5`, `4:3`, `9:16`, `16:9`, `2:3`, `3:2` o `WxH` (lados múltiplos de 16). Usa el `gpt-image` más nuevo de la cuenta; `--model` o `OPENAI_IMAGE_MODEL` lo fijan.
+
 ## Fuentes citadas en la página
 
 - "Rethinking the aging neck", European Journal of Plastic Surgery (2026): https://link.springer.com/article/10.1007/s00238-026-02520-9
