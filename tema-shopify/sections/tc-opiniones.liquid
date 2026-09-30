@@ -1,0 +1,361 @@
+{%- comment -%}
+  Tema Convertible · Opiniones. Solo prueba real: calificación de otra tienda con su fuente y link,
+  reseñas propias con número de pedido, y videos de usuarias con su origen. Cada tipo tiene su estado
+  para cuando no hay datos (nunca se inventan puntajes ni reseñas).
+  Cada reseña puede llevar hasta 3 fotos de la clienta: se ven chicas en la tarjeta y se agrandan al tocarlas.
+{%- endcomment -%}
+{{ 'lm-colageno.css' | asset_url | stylesheet_tag }}
+{{ 'tc.css' | asset_url | stylesheet_tag }}
+{%- liquid
+  assign s = section.settings
+  assign own_count = 0
+  assign ext_count = 0
+  assign vid_count = 0
+  assign pic_count = 0
+  for b in section.blocks
+    case b.type
+      when 'review'
+        if b.settings.origen == 'propia'
+          assign own_count = own_count | plus: 1
+        else
+          assign ext_count = ext_count | plus: 1
+        endif
+        if b.settings.foto_1 != blank or b.settings.foto_2 != blank or b.settings.foto_3 != blank
+          assign pic_count = pic_count | plus: 1
+        endif
+      when 'video'
+        assign vid_count = vid_count | plus: 1
+    endcase
+  endfor
+  assign dist_total = s.dist_5 | plus: s.dist_4 | plus: s.dist_3 | plus: s.dist_2 | plus: s.dist_1
+-%}
+<div class="lm tc" style="{% render 'tc-accent', preset: s.acento %}">
+<section class="lm-sec{% if s.tinte %} lm-sec--tint{% endif %}" id="{{ s.ancla | default: 'opiniones' | handleize }}" style="padding-bottom:24px">
+<div class="lm-wrap">
+  <div class="lm-head lm-reveal">
+    {%- if s.eyebrow != blank -%}<span class="lm-eyebrow">{{ s.eyebrow }}</span>{%- endif -%}
+    <h2 class="lm-h2">{{ s.titulo }}</h2>
+    {%- if s.texto != blank -%}<p class="lm-lead">{{ s.texto }}</p>{%- endif -%}
+  </div>
+
+  {%- if vid_count > 0 -%}
+  <div class="lm-reveal" style="display:flex;flex-direction:column;gap:14px;margin-bottom:40px">
+    {%- if s.videos_titulo != blank -%}<div class="lm-rev__list-head"><span>{{ s.videos_titulo }}</span></div>{%- endif -%}
+    <div class="lm-snap tc-vids" data-tc-vids data-auto="{{ s.videos_auto }}" data-speed="{{ s.videos_velocidad }}">
+      {%- for b in section.blocks -%}{%- if b.type == 'video' -%}
+        <figure class="tc-vid" {{ b.shopify_attributes }}>
+          {%- if b.settings.video != blank -%}
+            <div class="tc-vid__media">
+              {{ b.settings.video | video_tag: autoplay: true, loop: true, muted: true, playsinline: true, preload: 'metadata', image_size: '600x', controls: false }}
+              <button type="button" class="tc-vid__snd" data-snd aria-label="Activar sonido" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path class="tc-snd-off" d="m22 9-6 6M16 9l6 6"/><path class="tc-snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></button>
+            </div>
+          {%- else -%}
+            <span class="tc-vid__ph" style="position:relative">{% render 'tc-img', slot: 'Video de usuaria (9:16)' %}</span>
+          {%- endif -%}
+          {%- if b.settings.texto != blank -%}<p>“{{ b.settings.texto }}”</p>{%- endif -%}
+          {%- if b.settings.nombre != blank -%}<b>{{ b.settings.nombre }}</b>{%- endif -%}
+        </figure>
+      {%- endif -%}{%- endfor -%}
+    </div>
+    {%- if s.videos_nota != blank -%}<p class="lm-small">{{ s.videos_nota }}</p>{%- endif -%}
+  </div>
+  <style>
+    .tc-vids[data-tc-vids].is-auto{scroll-snap-type:none}
+    .tc-vid__media{position:relative}
+    .tc-vid__media video{pointer-events:none}
+    .tc-vid__snd{position:absolute;right:10px;bottom:10px;width:44px;height:44px;border-radius:50%;border:0;display:grid;place-items:center;background:rgba(20,16,24,.55);color:#fff;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+    .tc-vid__snd .tc-snd-on{display:none}
+    .tc-vid__snd[aria-pressed="true"] .tc-snd-on{display:inline}
+    .tc-vid__snd[aria-pressed="true"] .tc-snd-off{display:none}
+    @media (min-width:990px){
+      .tc .tc-vids[data-tc-vids]{display:flex;gap:16px;overflow-x:auto;margin:0 -16px;padding:0 16px}
+      .tc .tc-vids[data-tc-vids] .tc-vid{flex:0 0 270px}
+    }
+  </style>
+  <script>
+  (function(){
+    function init(el){
+      if(el.hasAttribute('data-ready'))return; el.setAttribute('data-ready','');
+      var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var auto = el.getAttribute('data-auto') !== 'false' && !reduce;
+      var speed = parseFloat(el.getAttribute('data-speed')) || 28;
+      var originals = Array.prototype.slice.call(el.children);
+      if(!originals.length)return;
+
+      // Clones para que el deslizamiento sea infinito y sin saltos.
+      if(auto && originals.length > 1){
+        originals.forEach(function(f){
+          var c=f.cloneNode(true); c.setAttribute('aria-hidden','true'); c.setAttribute('data-clone','');
+          c.removeAttribute('data-shopify-editor-block');
+          c.querySelectorAll('button').forEach(function(b){b.tabIndex=-1;});
+          el.appendChild(c);
+        });
+        el.classList.add('is-auto');
+      }
+
+      var vids = el.querySelectorAll('video');
+      vids.forEach(function(v){ v.muted=true; v.loop=true; v.playsInline=true; v.setAttribute('playsinline',''); v.removeAttribute('controls'); });
+
+      // Reproduce solo los videos que se ven (ahorra datos en el celular).
+      var io = 'IntersectionObserver' in window ? new IntersectionObserver(function(es){
+        es.forEach(function(e){
+          var v=e.target;
+          if(e.isIntersecting){ var p=v.play(); if(p&&p.catch)p.catch(function(){}); }
+          else { v.pause(); if(!v.muted){ v.muted=true; setSnd(v,false); soundHold=false; } }
+        });
+      },{threshold:.35}) : null;
+      vids.forEach(function(v){ if(io)io.observe(v); else v.play(); });
+
+      // Sonido: tocar el parlante activa el audio de ese video y silencia los demás.
+      var soundHold=false;
+      function setSnd(v,on){ var b=v.parentNode.querySelector('[data-snd]'); if(b){b.setAttribute('aria-pressed',on?'true':'false'); b.setAttribute('aria-label',on?'Silenciar':'Activar sonido');} }
+      el.addEventListener('click',function(e){
+        var b=e.target.closest('[data-snd]'); if(!b)return;
+        var v=b.parentNode.querySelector('video'); if(!v)return;
+        var on=v.muted;
+        vids.forEach(function(o){ if(o!==v && !o.muted){o.muted=true; setSnd(o,false);} });
+        v.muted=!on; setSnd(v,on);
+        if(on){ v.currentTime=0; var p=v.play(); if(p&&p.catch)p.catch(function(){}); }
+        soundHold=on;
+      });
+
+      if(!auto || originals.length < 2)return;
+
+      // Deslizamiento continuo; se frena cuando la clienta toca, arrastra o escucha un video.
+      var pos=el.scrollLeft, last=0, userHold=false, resumeT=null, visible=true, running=false;
+      function loopW(){ var first=el.querySelector('[data-clone]'); return first ? first.offsetLeft - originals[0].offsetLeft : 0; }
+      function hold(){ userHold=true; clearTimeout(resumeT); }
+      function release(){ clearTimeout(resumeT); resumeT=setTimeout(function(){ userHold=false; pos=el.scrollLeft; },2500); }
+      el.addEventListener('pointerdown',hold,{passive:true});
+      el.addEventListener('touchstart',hold,{passive:true});
+      el.addEventListener('wheel',function(){hold();release();},{passive:true});
+      el.addEventListener('pointerup',function(){ if(!mouseIn)release(); },{passive:true});
+      el.addEventListener('touchend',release,{passive:true});
+      var mouseIn=false;
+      el.addEventListener('pointerenter',function(e){ if(e.pointerType==='mouse'){ mouseIn=true; hold(); } });
+      el.addEventListener('pointerleave',function(e){ if(e.pointerType==='mouse'){ mouseIn=false; release(); } });
+      el.addEventListener('scroll',function(){ if(userHold){ var w=loopW(); if(w>0 && el.scrollLeft>=w){ el.scrollLeft-=w; } if(mouseIn)clearTimeout(resumeT); else release(); } },{passive:true});
+      el.addEventListener('focusin',hold); el.addEventListener('focusout',release);
+
+      function tick(t){
+        if(!visible){ running=false; return; }
+        var dt = last ? Math.min(t-last,64)/1000 : 0; last=t;
+        if(!userHold && !soundHold){
+          var w=loopW();
+          pos += speed*dt;
+          if(w>0 && pos>=w) pos-=w;
+          el.scrollLeft=pos;
+        }
+        requestAnimationFrame(tick);
+      }
+      function start(){ if(running)return; running=true; last=0; pos=el.scrollLeft; requestAnimationFrame(tick); }
+      if('IntersectionObserver' in window){
+        new IntersectionObserver(function(es){ visible=es[0].isIntersecting; if(visible)start(); },{threshold:0}).observe(el);
+      } else start();
+    }
+    function boot(){ document.querySelectorAll('[data-tc-vids]').forEach(init); }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot); else boot();
+    document.addEventListener('shopify:section:load',boot);
+  })();
+  </script>
+  {%- endif -%}
+
+  <div class="lm-rev__grid">
+    <div class="lm-rev lm-reveal">
+      {%- if s.fuente_mostrar and s.fuente_nombre != blank -%}
+      <div class="lm-score lm-score--tint">
+        <span class="lm-eyebrow">El mismo producto en {{ s.fuente_nombre }}</span>
+        <div class="lm-score__num"><strong>{{ s.fuente_promedio | replace: '.', ',' }}</strong><div>{% render 'lm-stars', rating: s.fuente_promedio, size: 22 %}<span>{{ s.fuente_cantidad }} reseñas</span></div></div>
+        {%- if dist_total > 0 -%}
+        <div class="lm-dist">
+          {%- for k in (1..5) reversed -%}
+            {%- assign dk = 'dist_' | append: k -%}{%- assign dv = s[dk] -%}
+            {%- assign dw = dv | times: 100 | divided_by: dist_total -%}{%- if dw < 1 -%}{%- assign dw = 1 -%}{%- endif -%}
+            <div class="lm-dist__row"><span>{{ k }} ★</span><span class="lm-dist__track"><i style="width:{{ dw }}%"></i></span><span>{{ dv }}</span></div>
+          {%- endfor -%}
+        </div>
+        {%- endif -%}
+        <p class="lm-small">Calificación de compradores de {{ s.fuente_nombre }}, consultada en {{ s.fuente_fecha }}.</p>
+        {%- if s.fuente_url != blank -%}<a class="lm-src" href="{{ s.fuente_url }}" target="_blank" rel="noopener">Ver las reseñas en {{ s.fuente_nombre }}{% render 'lm-icon', name: 'external' %}</a>{%- endif -%}
+      </div>
+      {%- endif -%}
+      <div class="lm-score lm-score--line">
+        <span class="lm-eyebrow">En {{ shop.name }}</span>
+        {%- if s.propias_cantidad >= 10 and s.propias_promedio > 0 -%}
+          <div class="lm-score__num"><strong>{{ s.propias_promedio | replace: '.', ',' }}</strong><div>{% render 'lm-stars', rating: s.propias_promedio, size: 22 %}<span>{{ s.propias_cantidad }} reseñas de clientas</span></div></div>
+        {%- else -%}
+          <p class="lm-lead">{{ s.sin_resenas }}</p>
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="lm-rev lm-reveal">
+      {%- if ext_count > 0 and s.fuente_nombre != blank -%}
+      <div class="lm-rev__list-head"><span>Compradores en {{ s.fuente_nombre }}</span>{%- if s.fuente_url != blank -%}<a href="{{ s.fuente_url }}" target="_blank" rel="noopener">Ver originales</a>{%- endif -%}</div>
+      <div class="lm-snap lm-rev__list">
+        {%- for b in section.blocks -%}{%- if b.type == 'review' and b.settings.origen != 'propia' -%}{% render 'lm-review', b: b %}{%- endif -%}{%- endfor -%}
+      </div>
+      {%- if s.fuente_nota != blank -%}<p class="lm-small">{{ s.fuente_nota }}</p>{%- endif -%}
+      {%- endif -%}
+      {%- if own_count > 0 -%}
+      <div class="lm-rev__list-head" style="margin-top:12px"><span>Clientas de {{ shop.name }}</span></div>
+      <div class="lm-snap lm-rev__list">
+        {%- for b in section.blocks -%}{%- if b.type == 'review' and b.settings.origen == 'propia' -%}{% render 'lm-review', b: b, own: true %}{%- endif -%}{%- endfor -%}
+      </div>
+      {%- else -%}
+      <div class="lm-invite"><strong>{{ s.invita_titulo }}</strong><span class="lm-lead">{{ s.invita_texto }}</span>{%- if s.invita_url != blank -%}<a class="lm-src" href="{{ s.invita_url }}" target="_blank" rel="noopener">{{ s.invita_boton }}{% render 'lm-icon', name: 'arrow' %}</a>{%- endif -%}</div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+</section>
+
+{%- if pic_count > 0 -%}
+<dialog class="tc-lb" data-tc-lb aria-label="Foto de la reseña">
+  <img class="tc-lb__img" alt="">
+  <button type="button" class="tc-lb__btn tc-lb__close" data-lb-close aria-label="Cerrar">{% render 'lm-icon', name: 'close' %}</button>
+  <button type="button" class="tc-lb__btn tc-lb__prev" data-lb-prev aria-label="Foto anterior">{% render 'lm-icon', name: 'left' %}</button>
+  <button type="button" class="tc-lb__btn tc-lb__next" data-lb-next aria-label="Foto siguiente">{% render 'lm-icon', name: 'right' %}</button>
+  <span class="tc-lb__count" data-lb-count></span>
+</dialog>
+<style>
+  .lm-card__pics{display:flex;flex-wrap:wrap;gap:8px}
+  .lm-card__pic{display:block;width:64px;height:64px;flex-shrink:0;border:1px solid var(--lm-line);border-radius:var(--lm-r-sm);overflow:hidden;background:var(--lm-skin);cursor:zoom-in;transition:opacity .2s}
+  .lm-card__pic:hover{opacity:.85}
+  .lm-card__pic img{width:100%;height:100%;object-fit:cover}
+  .tc-lb{width:100vw;height:100vh;height:100dvh;max-width:none;max-height:none;margin:0;padding:64px 16px;border:0;background:transparent;color:#fff}
+  .tc-lb[open]{display:flex;align-items:center;justify-content:center}
+  .tc-lb::backdrop{background:rgba(20,16,24,.88)}
+  .tc-lb__img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;border-radius:var(--lm-r-md);background:var(--lm-skin)}
+  .tc-lb__btn{position:absolute;width:44px;height:44px;border:0;border-radius:999px;display:grid;place-items:center;background:rgba(255,255,255,.16);color:#fff;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  .tc-lb__btn:hover{background:rgba(255,255,255,.28)}
+  .tc-lb__close{top:12px;right:12px}
+  .tc-lb__prev,.tc-lb__next{top:50%;margin-top:-22px}
+  .tc-lb__prev{left:12px}
+  .tc-lb__next{right:12px}
+  .tc-lb__count{position:absolute;left:0;right:0;bottom:20px;text-align:center;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+  html:has(.tc-lb[open]){overflow:hidden}
+  @media (min-width:990px){
+    .lm-card__pic{width:72px;height:72px}
+    .tc-lb{padding:72px 88px}
+    .tc-lb__close{top:20px;right:20px}
+    .tc-lb__prev{left:24px}
+    .tc-lb__next{right:24px}
+  }
+</style>
+<script>
+(function(){
+  // Fotos de las reseñas: tocar una miniatura la abre grande. Sin soporte de <dialog>, el link abre la foto en otra pestaña.
+  function init(d){
+    if(d.hasAttribute('data-ready') || typeof d.showModal !== 'function')return; d.setAttribute('data-ready','');
+    var root = d.closest('.tc') || document;
+    var img = d.querySelector('.tc-lb__img'), count = d.querySelector('[data-lb-count]');
+    var prev = d.querySelector('[data-lb-prev]'), next = d.querySelector('[data-lb-next]');
+    var list = [], i = 0;
+    function show(n){
+      i = (n + list.length) % list.length;
+      var a = list[i], t = a.querySelector('img');
+      img.src = a.href; img.alt = t ? t.alt : '';
+      var multi = list.length > 1;
+      prev.hidden = next.hidden = count.hidden = !multi;
+      count.textContent = (i + 1) + ' / ' + list.length;
+    }
+    root.addEventListener('click', function(e){
+      var a = e.target.closest('[data-lm-pic]'); if(!a || d.open)return;
+      e.preventDefault();
+      list = Array.prototype.slice.call(a.closest('[data-lm-pics]').querySelectorAll('[data-lm-pic]'));
+      show(list.indexOf(a)); d.showModal();
+    });
+    prev.addEventListener('click', function(){ show(i - 1); });
+    next.addEventListener('click', function(){ show(i + 1); });
+    d.querySelector('[data-lb-close]').addEventListener('click', function(){ d.close(); });
+    // Tocar afuera de la foto cierra.
+    d.addEventListener('click', function(e){ if(e.target === d)d.close(); });
+    d.addEventListener('keydown', function(e){
+      if(list.length < 2)return;
+      if(e.key === 'ArrowLeft')show(i - 1);
+      if(e.key === 'ArrowRight')show(i + 1);
+    });
+    d.addEventListener('close', function(){ img.removeAttribute('src'); });
+  }
+  function boot(){ document.querySelectorAll('[data-tc-lb]').forEach(init); }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot); else boot();
+  document.addEventListener('shopify:section:load',boot);
+})();
+</script>
+{%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "TC · Opiniones",
+  "tag": "div",
+  "class": "tc-section",
+  "max_blocks": 24,
+  "settings": [
+    { "type": "select", "id": "acento", "label": "Color de acento", "default": "ciruela", "options": [
+      { "value": "ciruela", "label": "Ciruela" }, { "value": "violeta", "label": "Violeta (Lumielle)" }, { "value": "salvia", "label": "Salvia" },
+      { "value": "oceano", "label": "Océano" }, { "value": "terracota", "label": "Terracota" }, { "value": "grafito", "label": "Grafito" }
+    ] },
+    { "type": "checkbox", "id": "tinte", "label": "Fondo tinte", "default": false },
+    { "type": "text", "id": "ancla", "label": "Ancla", "default": "opiniones" },
+    { "type": "text", "id": "eyebrow", "label": "Volanta", "default": "Opiniones" },
+    { "type": "text", "id": "titulo", "label": "Título", "default": "Lo que dicen de este producto" },
+    { "type": "text", "id": "texto", "label": "Bajada", "default": "Solo mostramos opiniones reales, siempre con su fuente." },
+    { "type": "header", "content": "Videos de usuarias" },
+    { "type": "text", "id": "videos_titulo", "label": "Título de los videos" },
+    { "type": "text", "id": "videos_nota", "label": "Nota de origen de los videos", "info": "Ej.: Videos de usuarias del producto publicados en redes." },
+    { "type": "checkbox", "id": "videos_auto", "label": "Carrusel que se desliza solo", "default": true, "info": "Los videos se reproducen solos, sin sonido y en bucle. Se frena cuando la clienta toca o activa el sonido." },
+    { "type": "range", "id": "videos_velocidad", "label": "Velocidad del carrusel", "min": 10, "max": 60, "step": 2, "unit": "px", "default": 28 },
+    { "type": "header", "content": "Calificación de otra tienda (el mismo producto)" },
+    { "type": "checkbox", "id": "fuente_mostrar", "label": "Mostrar", "default": false },
+    { "type": "text", "id": "fuente_nombre", "label": "Nombre de la fuente" },
+    { "type": "range", "id": "fuente_promedio", "label": "Promedio", "min": 0, "max": 5, "step": 0.1, "default": 4.5 },
+    { "type": "text", "id": "fuente_cantidad", "label": "Cantidad de reseñas" },
+    { "type": "number", "id": "dist_5", "label": "5 estrellas", "default": 0 },
+    { "type": "number", "id": "dist_4", "label": "4 estrellas", "default": 0 },
+    { "type": "number", "id": "dist_3", "label": "3 estrellas", "default": 0 },
+    { "type": "number", "id": "dist_2", "label": "2 estrellas", "default": 0 },
+    { "type": "number", "id": "dist_1", "label": "1 estrella", "default": 0 },
+    { "type": "text", "id": "fuente_fecha", "label": "Fecha de consulta" },
+    { "type": "url", "id": "fuente_url", "label": "Link a las reseñas originales" },
+    { "type": "text", "id": "fuente_nota", "label": "Nota bajo las reseñas externas" },
+    { "type": "header", "content": "Reseñas propias" },
+    { "type": "number", "id": "propias_cantidad", "label": "Cantidad (de tu app de reseñas)", "default": 0 },
+    { "type": "range", "id": "propias_promedio", "label": "Promedio", "min": 0, "max": 5, "step": 0.1, "default": 0 },
+    { "type": "text", "id": "sin_resenas", "label": "Texto sin reseñas", "default": "Todavía no hay reseñas de este producto en la tienda. Las primeras, de pedidos reales, van a aparecer acá." },
+    { "type": "text", "id": "invita_titulo", "label": "Invitación: título", "default": "¿Ya lo probaste?" },
+    { "type": "text", "id": "invita_texto", "label": "Invitación: texto", "default": "Contanos cómo te fue. Tu opinión ayuda a otras clientas a decidir." },
+    { "type": "text", "id": "invita_boton", "label": "Invitación: botón", "default": "Dejar mi opinión" },
+    { "type": "url", "id": "invita_url", "label": "Invitación: link (ej. WhatsApp)" }
+  ],
+  "blocks": [
+    {
+      "type": "review", "name": "Reseña",
+      "settings": [
+        { "type": "select", "id": "origen", "label": "Origen", "default": "externa", "options": [ { "value": "externa", "label": "Otra tienda (la fuente de arriba)" }, { "value": "propia", "label": "Clienta de la tienda (pedido confirmado)" } ] },
+        { "type": "text", "id": "nombre", "label": "Nombre" },
+        { "type": "text", "id": "pais", "label": "País o ciudad" },
+        { "type": "text", "id": "fecha", "label": "Fecha" },
+        { "type": "range", "id": "estrellas", "label": "Estrellas", "min": 1, "max": 5, "step": 1, "default": 5 },
+        { "type": "text", "id": "titulo", "label": "Título" },
+        { "type": "textarea", "id": "texto", "label": "Texto" },
+        { "type": "header", "content": "Fotos de la clienta" },
+        { "type": "paragraph", "content": "Opcional. Se ven chicas debajo del texto y se agrandan al tocarlas. Usá solo fotos reales que mandó la compradora." },
+        { "type": "image_picker", "id": "foto_1", "label": "Foto 1" },
+        { "type": "image_picker", "id": "foto_2", "label": "Foto 2" },
+        { "type": "image_picker", "id": "foto_3", "label": "Foto 3" }
+      ]
+    },
+    {
+      "type": "video", "name": "Video de usuaria",
+      "settings": [
+        { "type": "video", "id": "video", "label": "Video (vertical 9:16)" },
+        { "type": "text", "id": "texto", "label": "Lo que dice" },
+        { "type": "text", "id": "nombre", "label": "Nombre" }
+      ]
+    }
+  ],
+  "presets": [ { "name": "TC · Opiniones" } ]
+}
+{% endschema %}

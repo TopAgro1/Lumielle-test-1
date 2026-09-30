@@ -42,3 +42,12 @@ Todo está en el objeto `LM` al principio del `<script>` de `index.html`:
 - "Rethinking the aging neck", European Journal of Plastic Surgery (2026): https://link.springer.com/article/10.1007/s00238-026-02520-9
 - American Academy of Dermatology, "How to apply sunscreen": https://www.aad.org/public/everyday-care/sun-protection/shade-clothing-sunscreen/how-to-apply-sunscreen
 - Kafi y col., "Improvement of naturally aged skin with vitamin A (retinol)", Archives of Dermatology (2007): https://pubmed.ncbi.nlm.nih.gov/17515510/
+
+## Tema de Shopify: fotos en las reseñas
+
+`tema-shopify/` guarda los dos archivos del tema que se cambiaron para que cada reseña pueda llevar fotos de la clienta. Están subidos en la copia sin publicar "Copia de Lumielle videos carrusel (Claude)"; el tema en vivo no se tocó.
+
+- `sections/tc-opiniones.liquid`: el bloque **Reseña** suma "Foto 1", "Foto 2" y "Foto 3" (opcionales), y un visor que agranda la foto al tocarla (flechas si hay más de una, cierra con la X, tocando afuera o con Esc).
+- `snippets/lm-review.liquid`: muestra las fotos como miniaturas cuadradas (64 px en celular, 72 px en escritorio) entre el texto y el nombre.
+
+Para cargarlas: Personalizar la copia → plantilla de producto → sección **TC · Opiniones** → cada reseña → "Fotos de la clienta". Sin fotos, la tarjeta queda igual que antes.
