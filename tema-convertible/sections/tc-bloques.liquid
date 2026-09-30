@@ -1,0 +1,348 @@
+{%- comment -%}
+  Tema Convertible · Contenido. Un solo archivo con los diseños de la anatomía de página:
+  1 el dolor · 2 por qué importa · 3 fricciones · lo que suele probarse · solución · pasos · activos ·
+  calidad · comparación · garantía · preguntas · momentos · texto legal.
+  Cada ítem de una lista es un bloque "Ítem". Sirve en la home, en productos y en páginas.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign lay = s.layout
+  assign threshold_cents = settings.free_shipping_threshold | times: 100
+  assign sec_class = 'lm-sec'
+  case s.fondo
+    when 'tinte'
+      assign sec_class = 'lm-sec lm-sec--tint'
+    when 'oscuro'
+      assign sec_class = 'lm-sec lm-sec--dark'
+  endcase
+  if lay == 'faq'
+    assign sec_class = sec_class | append: ' lm-faq'
+  endif
+  assign pad = ''
+  if s.sin_margen_arriba
+    assign pad = 'padding-top:0;'
+  endif
+  assign items = section.blocks | where: 'type', 'item'
+  assign prod_img = nil
+  if product
+    assign prod_img = product.featured_image
+  endif
+  assign has_photo = false
+  if s.imagen != blank or s.slot != blank
+    assign has_photo = true
+  endif
+-%}
+<div class="lm tc" style="{% render 'tc-accent', preset: s.acento %}">
+<section class="{{ sec_class }}"{% if s.ancla != blank %} id="{{ s.ancla | handleize }}"{% endif %}{% if pad != '' %} style="{{ pad }}"{% endif %}>
+
+{%- case lay -%}
+
+{%- when 'problema' -%}
+<div class="lm-wrap" style="display:flex;flex-direction:column;gap:40px">
+  <div class="lm-split lm-split--2">
+    <div class="lm-reveal" style="display:flex;flex-direction:column;gap:18px">
+      {%- if s.eyebrow != blank -%}<span class="lm-eyebrow">{{ s.eyebrow }}</span>{%- endif -%}
+      <h2 class="lm-h2 lm-h2--xl">{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h2>
+      {%- if s.texto != blank -%}<p class="lm-lead" style="max-width:560px">{% render 'store-tokens', text: s.texto %}</p>{%- endif -%}
+    </div>
+    <div class="lm-photo lm-reveal" style="height:clamp(380px,40vw,520px)">
+      {% render 'tc-img', image: s.imagen, slot: s.slot, alt: s.alt, position: s.posicion %}
+      {%- if s.foto_tag != blank -%}<span class="lm-photo__tag">{{ s.foto_tag }}</span>{%- endif -%}
+    </div>
+  </div>
+  {%- if items.size > 0 -%}
+  <div class="lm-num-list lm-reveal">
+    {%- for b in items -%}<div class="lm-num" {{ b.shopify_attributes }}><span>{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span><div><h3>{{ b.settings.titulo }}</h3><p class="lm-lead">{% render 'store-tokens', text: b.settings.texto %}</p></div></div>{%- endfor -%}
+  </div>
+  {%- endif -%}
+  {%- if s.cita != blank -%}<p class="lm-quote lm-reveal">{{ s.cita }}</p>{%- endif -%}
+</div>
+
+{%- when 'fricciones' -%}
+<div class="lm-wrap" style="display:flex;flex-direction:column;gap:40px">
+  <div class="lm-head lm-reveal" style="margin-bottom:0">
+    {%- if s.eyebrow != blank -%}<span class="lm-eyebrow">{{ s.eyebrow }}</span>{%- endif -%}
+    <h2 class="lm-h2">{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h2>
+    {%- if s.texto != blank -%}<p class="lm-lead" style="max-width:640px">{% render 'store-tokens', text: s.texto %}</p>{%- endif -%}
+  </div>
+  <div class="lm-num-list lm-reveal">
+    {%- for b in items -%}<div class="lm-num" {{ b.shopify_attributes }}><span>{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span><div><h3>{{ b.settings.titulo }}</h3><p class="lm-lead">{% render 'store-tokens', text: b.settings.texto %}</p></div></div>{%- endfor -%}
+  </div>
+  {%- if s.cita != blank -%}<p class="lm-quote lm-reveal">{{ s.cita }}</p>{%- endif -%}
+</div>
+
+{%- when 'mecanismo' -%}
+<div class="lm-wrap lm-twocol">
+  <div class="lm-sticky-col lm-reveal" style="display:flex;flex-direction:column;gap:18px">
+    {%- if s.eyebrow != blank -%}<span class="lm-eyebrow">{{ s.eyebrow }}</span>{%- endif -%}
+    <h2 class="lm-h2">{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h2>
+    {%- if s.texto != blank -%}<p class="lm-lead">{% render 'store-tokens', text: s.texto %}</p>{%- endif -%}
+    {%- if s.fuente_url != blank -%}<a class="lm-src" href="{{ s.fuente_url }}" target="_blank" rel="noopener">{{ s.fuente_label | default: 'Ver la fuente' }}{% render 'lm-icon', name: 'external' %}</a>{%- endif -%}
+    {%- if has_photo -%}<div class="lm-photo" style="height:300px">{% render 'tc-img', image: s.imagen, slot: s.slot, alt: s.alt, position: s.posicion %}</div>{%- endif -%}
+  </div>
+  <div style="display:flex;flex-direction:column;gap:14px;margin-top:24px">
+    {%- for b in items -%}
+      <div class="lm-feature lm-reveal" {{ b.shopify_attributes }}><span class="lm-feature__ico">{% render 'lm-icon', name: b.settings.icono %}</span><div><h3>{% render 'store-tokens', text: b.settings.titulo %}</h3><p>{% render 'store-tokens', text: b.settings.texto %}</p></div></div>
+    {%- endfor -%}
+    {%- if s.dato_1 != blank -%}
+    <div class="lm-science lm-reveal">
+      <span class="lm-eyebrow">Qué dice la ciencia</span>
+      <div class="lm-science__nums">
+        {%- for k in (1..3) -%}{%- assign dk = 'dato_' | append: k -%}{%- assign lk = 'dato_label_' | append: k -%}{%- if s[dk] != blank -%}<div><strong>{{ s[dk] }}</strong><span>{{ s[lk] }}</span></div>{%- endif -%}{%- endfor -%}
+      </div>
+      {%- if s.ciencia_texto != blank -%}<p>{{ s.ciencia_texto }}</p>{%- endif -%}
+      {%- if s.ciencia_url != blank -%}<a href="{{ s.ciencia_url }}" target="_blank" rel="noopener">{{ s.ciencia_link | default: 'Ver el estudio' }}{% render 'lm-icon', name: 'external' %}</a>{%- endif -%}
+    </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{%- when 'filas' -%}
+<div class="lm-wrap">
+  <div class="lm-head lm-reveal">{%- if s.eyebrow != blank -%}<span class="lm-eyebrow">{{ s.eyebrow }}</span>{%- endif -%}<h2 class="lm-h2">{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h2>{%- if s.texto != blank -%}<p class="lm-lead" style="max-width:640px">{% render 'store-tokens', text: s.texto %}</p>{%- endif -%}</div>
+  <div class="lm-rows lm-reveal">
+    {%- for b in items -%}
+      <div class="lm-row" {{ b.shopify_attributes }}><span class="lm-row__n">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span><div class="lm-row__txt"><h3>{{ b.settings.titulo }}</h3><p>{% render 'store-tokens', text: b.settings.texto %}</p></div><span class="lm-row__img">{% render 'tc-img', image: b.settings.imagen, slot: b.settings.slot, alt: b.settings.alt, width: 500 %}</span></div>
+    {%- endfor -%}
+  </div>
+  {%- if s.cita != blank -%}<p class="lm-quote lm-reveal" style="margin-top:32px">{{ s.cita }}</p>{%- endif -%}
+</div>
+
+{%- when 'solucion' -%}
+<div class="lm-wrap" style="display:flex;flex-direction:column;gap:56px">
+  <div class="lm-solution lm-reveal">
+    <div class="lm-solution__visual">
+      {%- if s.imagen != blank -%}
+        {{ s.imagen | image_url: width: 1400 | image_tag: loading: 'lazy', alt: s.alt, sizes: '(min-width: 990px) 50vw, 92vw', widths: '500, 800, 1100, 1400' }}
+      {%- elsif prod_img -%}
+        {{ prod_img | image_url: width: 1000 | image_tag: loading: 'lazy', alt: '', class: 'is-product' }}
+      {%- else -%}
+        {% render 'tc-img', slot: s.slot, alt: s.alt %}
+      {%- endif -%}
+    </div>
+    <div class="lm-solution__body">
+      {%- if s.eyebrow != blank -%}<span class="lm-eyebrow" style="color:var(--lm-brand-700)">{{ s.eyebrow }}</span>{%- endif -%}
+      <h2 class="lm-h2">{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h2>
+      {%- if s.texto != blank -%}<p class="lm-lead">{% render 'store-tokens', text: s.texto %}</p>{%- endif -%}
+      {%- if s.chips != blank -%}<div class="lm-solution__chips">{%- assign cs = s.chips | split: '|' -%}{%- for c in cs -%}<span class="lm-chip">{{ c | strip }}</span>{%- endfor -%}</div>{%- endif -%}
+      {%- if s.cta_label != blank -%}<a href="{{ s.cta_url | default: '#comprar' }}" class="lm-btn lm-btn--auto">{{ s.cta_label }}{% render 'lm-icon', name: 'arrow' %}</a>{%- endif -%}
+    </div>
+  </div>
+  {%- if items.size > 0 -%}
+  <div class="lm-reveal" style="display:flex;flex-direction:column;gap:16px">
+    {%- if s.subtitulo != blank -%}<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px"><h3 class="lm-h2" style="font-family:var(--lm-serif);font-weight:var(--lm-display-w);font-size:clamp(26px,3vw,34px)">{{ s.subtitulo }}</h3>{%- if s.nota != blank -%}<span class="lm-small">{{ s.nota }}</span>{%- endif -%}</div>{%- endif -%}
+    <div class="lm-snap lm-drinks">
+      {%- for b in items -%}<div class="lm-photo" {{ b.shopify_attributes }}>{% render 'tc-img', image: b.settings.imagen, slot: b.settings.slot, alt: b.settings.alt, width: 800 %}{%- if b.settings.titulo != blank -%}<span class="lm-photo__tag">{{ b.settings.titulo }}</span>{%- endif -%}</div>{%- endfor -%}
+    </div>
+  </div>
+  {%- endif -%}
+</div>
+
+{%- when 'pasos' -%}
+<div class="lm-wrap">
+  <div class="lm-head lm-reveal" style="align-items:center;text-align:center">{%- if s.eyebrow != blank -%}<span class="lm-eyebrow">{{ s.eyebrow }}</span>{%- endif -%}<h2 class="lm-h2">{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h2>{%- if s.texto != blank -%}<p class="lm-lead">{% render 'store-tokens', text: s.texto %}</p>{%- endif -%}</div>
+  <ol class="lm-steps lm-reveal" style="list-style:none;margin:0;padding:0">
+    {%- for b in items -%}
+      <li class="lm-step" {{ b.shopify_attributes }}><span class="lm-step__img">{% render 'tc-img', image: b.settings.imagen, slot: b.settings.slot, alt: b.settings.alt, width: 800 %}<span class="lm-step__n" aria-hidden="true">{{ forloop.index }}</span></span><div><h3>{{ b.settings.titulo }}</h3><p>{% render 'store-tokens', text: b.settings.texto %}</p></div></li>
+    {%- endfor -%}
+  </ol>
+  {%- if s.cta_label != blank -%}<div style="display:flex;justify-content:center;margin-top:32px"><a href="{{ s.cta_url | default: '#comprar' }}" class="lm-btn lm-btn--auto">{{ s.cta_label }}{% render 'lm-icon', name: 'arrow' %}</a></div>{%- endif -%}
+</div>
+
+{%- when 'activos' -%}
+<div class="lm-wrap lm-twocol">
+  <div class="lm-sticky-col lm-reveal" style="display:flex;flex-direction:column;gap:18px;margin-bottom:24px">
+    {%- if s.eyebrow != blank -%}<span class="lm-eyebrow">{{ s.eyebrow }}</span>{%- endif -%}
+    <h2 class="lm-h2">{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h2>
+    {%- if s.texto != blank -%}<p class="lm-small">{{ s.texto }}</p>{%- endif -%}
+    {%- if has_photo -%}<div class="lm-photo" style="height:clamp(240px,26vw,340px)">{% render 'tc-img', image: s.imagen, slot: s.slot, alt: s.alt, position: s.posicion %}</div>{%- endif -%}
+  </div>
+  <div class="lm-actives lm-reveal">
+    {%- for b in items -%}<div class="lm-active" {{ b.shopify_attributes }}><div class="lm-active__top"><h3>{{ b.settings.titulo }}</h3>{%- if b.settings.valor != blank -%}<b>{{ b.settings.valor }}</b>{%- endif -%}</div><p>{% render 'store-tokens', text: b.settings.texto %}</p></div>{%- endfor -%}
+  </div>
+</div>
+
+{%- when 'calidad' -%}
+<div class="lm-wrap lm-twocol" style="align-items:center">
+  <div class="lm-reveal" style="display:flex;flex-direction:column;gap:22px;margin-bottom:28px">
+    {%- if s.eyebrow != blank -%}<span class="lm-eyebrow">{{ s.eyebrow }}</span>{%- endif -%}
+    <h2 class="lm-h2">{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h2>
+    {%- if s.texto != blank -%}<p class="lm-lead" style="color:var(--lm-brand-200)">{{ s.texto }}</p>{%- endif -%}
+    {%- if items.size > 0 -%}<div class="lm-badges">{%- for b in items -%}<div class="lm-badge" {{ b.shopify_attributes }}>{% render 'lm-icon', name: b.settings.icono %}{{ b.settings.titulo }}</div>{%- endfor -%}</div>{%- endif -%}
+    {%- if s.nota != blank -%}<p class="lm-small" style="color:var(--lm-brand-200)">{{ s.nota }}</p>{%- endif -%}
+  </div>
+  <div class="lm-label lm-reveal">
+    <span class="lm-label__title">{{ s.etiqueta_titulo | default: 'Información' }}</span>
+    {%- if s.etiqueta_bajada != blank -%}<span class="lm-small">{{ s.etiqueta_bajada }}</span>{%- endif -%}
+    <div class="lm-label__rule"></div>
+    {%- assign rows = s.etiqueta_filas | newline_to_br | split: '<br />' -%}
+    {%- for r in rows -%}{%- assign p = r | strip | split: '|' -%}{%- if p.size > 0 and p[0] != blank -%}<div class="lm-label__row"><span>{{ p[0] | strip }}</span><span>{{ p[1] | strip }}</span></div>{%- endif -%}{%- endfor -%}
+    {%- if s.etiqueta_texto != blank -%}<p class="lm-small" style="padding-top:14px;color:var(--lm-ink-2)">{{ s.etiqueta_texto }}</p>{%- endif -%}
+    {%- if s.etiqueta_destacado != blank -%}<p style="font-size:13px;font-weight:700;padding-top:6px">{{ s.etiqueta_destacado }}</p>{%- endif -%}
+  </div>
+</div>
+
+{%- when 'comparar' -%}
+<div class="lm-wrap">
+  <div class="lm-head lm-reveal" style="align-items:center;text-align:center">{%- if s.eyebrow != blank -%}<span class="lm-eyebrow">{{ s.eyebrow }}</span>{%- endif -%}<h2 class="lm-h2">{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h2></div>
+  <table class="lm-table lm-reveal">
+    <thead><tr><th scope="col"><span class="tc-sr">Característica</span></th><th scope="col">{{ s.col_nosotros | default: product.title | default: shop.name }}</th><th scope="col">{{ s.col_otros | default: 'Lo genérico' }}</th></tr></thead>
+    <tbody>
+      {%- for b in items -%}<tr {{ b.shopify_attributes }}><th scope="row">{{ b.settings.titulo }}</th><td>{{ b.settings.valor }}</td><td>{{ b.settings.valor2 }}</td></tr>{%- endfor -%}
+    </tbody>
+  </table>
+  {%- if s.cta_label != blank -%}<div style="display:flex;justify-content:center;margin-top:32px"><a href="{{ s.cta_url | default: '#comprar' }}" class="lm-btn lm-btn--auto">{{ s.cta_label }}{% render 'lm-icon', name: 'arrow' %}</a></div>{%- endif -%}
+</div>
+
+{%- when 'garantia' -%}
+{%- assign sello = s.sello_texto | default: settings.garantia_corta | strip -%}
+<div class="lm-wrap">
+  <div class="lm-guarantee lm-reveal">
+    <div class="lm-photo lm-guarantee__photo">{% render 'tc-img', image: s.imagen, slot: s.slot, alt: s.alt, position: s.posicion %}</div>
+    <div class="lm-guarantee__body">
+      <div class="lm-seal">
+        {%- if sello != blank -%}
+        <svg class="lm-seal__ring" viewBox="0 0 176 176" aria-hidden="true"><defs><path id="tc-seal-{{ section.id }}" d="M88,88 m-72,0 a72,72 0 1,1 144,0 a72,72 0 1,1 -144,0"/></defs><text style="fill:var(--lm-brand-700);font-family:var(--lm-sans)" font-size="13" font-weight="700" letter-spacing="2"><textPath href="#tc-seal-{{ section.id }}" textLength="448" lengthAdjust="spacing">{{ sello | upcase }} · {{ sello | upcase }} · </textPath></text></svg>
+        {%- endif -%}
+        <span class="lm-seal__core">{% render 'lm-icon', name: 'shield' %}</span>
+      </div>
+      <div class="lm-guarantee__text" style="display:flex;flex-direction:column;gap:12px">
+        {%- if s.eyebrow != blank -%}<span class="lm-eyebrow" style="color:var(--lm-brand-700)">{{ s.eyebrow }}</span>{%- endif -%}
+        <h2 class="lm-h2" style="font-size:clamp(28px,3.4vw,44px)">{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h2>
+        {%- if s.texto != blank -%}<p class="lm-lead">{% render 'store-tokens', text: s.texto %}</p>{%- endif -%}
+        <div class="lm-guarantee__chips"><span>{% render 'pay-copy', format: 'micro' %}</span>{% if threshold_cents > 0 %}<span>Envío gratis desde {{ threshold_cents | money_without_trailing_zeros }}</span>{% endif %}{%- for b in items -%}<span {{ b.shopify_attributes }}>{{ b.settings.titulo }}</span>{%- endfor -%}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{%- when 'faq' -%}
+{%- assign help_url = s.cta_url | default: settings.whatsapp_url -%}
+<div class="lm-wrap lm-faq__grid">
+  <div class="lm-sticky-col lm-reveal" style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px">
+    {%- if s.eyebrow != blank -%}<span class="lm-eyebrow">{{ s.eyebrow }}</span>{%- endif -%}
+    <h2 class="lm-h2">{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h2>
+    {%- if s.texto != blank -%}<p class="lm-lead">{% render 'store-tokens', text: s.texto %}</p>{%- endif -%}
+    {%- if has_photo -%}<div class="lm-photo lm-faq__photo">{% render 'tc-img', image: s.imagen, slot: s.slot, alt: s.alt, position: s.posicion %}</div>{%- endif -%}
+  </div>
+  <div class="lm-reveal">
+    <div class="lm-acc">
+      {%- for b in items -%}
+        <details {{ b.shopify_attributes }}{% if forloop.first %} open{% endif %}><summary><span>{{ b.settings.titulo }}</span><i>{% render 'lm-icon', name: 'plus' %}</i></summary><div class="lm-acc__body"><p>{% render 'store-tokens', text: b.settings.texto %}</p></div></details>
+      {%- endfor -%}
+    </div>
+    {%- if s.ayuda_texto != blank or help_url != blank -%}
+    <div class="lm-help">
+      <strong>¿Te quedó una duda?</strong>
+      {%- if s.ayuda_texto != blank -%}<p>{{ s.ayuda_texto }}</p>{%- elsif settings.contact_hours != blank -%}<p>{{ settings.contact_hours }}</p>{%- endif -%}
+      {%- if help_url != blank -%}<a href="{{ help_url }}" class="lm-btn lm-btn--ghost" target="_blank" rel="noopener">{% render 'lm-icon', name: 'chat' %}{{ s.cta_label | default: settings.whatsapp_label | default: 'Escribinos' }}</a>{%- endif -%}
+    </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{%- when 'momentos' -%}
+<div class="lm-wrap"><div class="lm-head lm-reveal" style="align-items:center;text-align:center">{%- if s.eyebrow != blank -%}<span class="lm-eyebrow">{{ s.eyebrow }}</span>{%- endif -%}<h2 class="lm-h2">{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h2></div></div>
+<div class="lm-moments" aria-hidden="true"><div class="lm-moments__row">
+  {%- for r in (1..2) -%}{%- for b in items -%}<span class="lm-moments__item">{% render 'tc-img', image: b.settings.imagen, slot: b.settings.slot, alt: '', width: 700 %}</span>{%- endfor -%}{%- endfor -%}
+</div></div>
+
+{%- else -%}
+<div class="lm-wrap"><div class="lm-legal" style="background:none;border:0;padding:0"><p>{% render 'store-tokens', text: s.texto %}</p></div></div>
+
+{%- endcase -%}
+</section>
+</div>
+
+{% schema %}
+{
+  "name": "TC · Contenido",
+  "tag": "div",
+  "class": "tc-section",
+  "max_blocks": 12,
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Diseño", "default": "problema", "options": [
+      { "value": "problema", "label": "1 · El dolor (hook + foto + lista)" },
+      { "value": "mecanismo", "label": "2 · Por qué importa (tarjetas + fuente)" },
+      { "value": "fricciones", "label": "3 · Por qué no lo resolviste (fricciones)" },
+      { "value": "filas", "label": "Lo que suele probarse (filas con foto)" },
+      { "value": "solucion", "label": "La solución (producto + usos)" },
+      { "value": "pasos", "label": "Cómo se usa (3 pasos)" },
+      { "value": "activos", "label": "Qué tiene (activos o materiales)" },
+      { "value": "calidad", "label": "Calidad (bloque oscuro + etiqueta)" },
+      { "value": "comparar", "label": "Comparación (tabla)" },
+      { "value": "garantia", "label": "Garantía (sello)" },
+      { "value": "faq", "label": "Preguntas frecuentes" },
+      { "value": "momentos", "label": "Momentos (cinta de fotos)" },
+      { "value": "legal", "label": "Texto legal" }
+    ] },
+    { "type": "select", "id": "acento", "label": "Color de acento", "default": "tema", "options": [
+      { "value": "tema", "label": "El del tema" }, { "value": "ciruela", "label": "Ciruela" }, { "value": "violeta", "label": "Violeta" }, { "value": "salvia", "label": "Salvia" },
+      { "value": "oceano", "label": "Océano" }, { "value": "terracota", "label": "Terracota" }, { "value": "grafito", "label": "Grafito" }
+    ] },
+    { "type": "select", "id": "fondo", "label": "Fondo", "default": "blanco", "options": [
+      { "value": "blanco", "label": "Blanco" }, { "value": "tinte", "label": "Tinte" }, { "value": "oscuro", "label": "Oscuro (acento 900)" }
+    ] },
+    { "type": "checkbox", "id": "sin_margen_arriba", "label": "Sin margen arriba", "default": false },
+    { "type": "text", "id": "ancla", "label": "Ancla (para el menú, ej. preguntas)" },
+    { "type": "header", "content": "Textos" },
+    { "type": "text", "id": "eyebrow", "label": "Volanta" },
+    { "type": "text", "id": "titulo", "label": "Título", "default": "Título de la sección" },
+    { "type": "text", "id": "titulo_it", "label": "Título: parte en itálica" },
+    { "type": "textarea", "id": "texto", "label": "Bajada", "info": "Podés usar [envio_gratis_desde], [envio_fijo], [medios_de_pago], [cuotas] y [garantia]." },
+    { "type": "text", "id": "cita", "label": "Frase de cierre (itálica)" },
+    { "type": "text", "id": "chips", "label": "Chips (separados por |)" },
+    { "type": "text", "id": "subtitulo", "label": "Subtítulo de la tira de fotos (solución)" },
+    { "type": "text", "id": "nota", "label": "Nota chica" },
+    { "type": "text", "id": "cta_label", "label": "Botón: texto" },
+    { "type": "text", "id": "cta_url", "label": "Botón: link", "info": "Vacío = baja al selector de packs (#comprar). En preguntas, vacío = WhatsApp de la configuración." },
+    { "type": "header", "content": "Foto de la sección" },
+    { "type": "image_picker", "id": "imagen", "label": "Foto" },
+    { "type": "text", "id": "slot", "label": "Qué foto va acá (se ve en el editor si falta)" },
+    { "type": "text", "id": "alt", "label": "Texto alternativo" },
+    { "type": "text", "id": "posicion", "label": "Encuadre (object-position)", "default": "50% 50%" },
+    { "type": "text", "id": "foto_tag", "label": "Etiqueta sobre la foto" },
+    { "type": "header", "content": "Fuente y ciencia (Por qué importa)" },
+    { "type": "text", "id": "fuente_label", "label": "Fuente: texto del link" },
+    { "type": "url", "id": "fuente_url", "label": "Fuente: link" },
+    { "type": "text", "id": "dato_1", "label": "Dato 1" }, { "type": "text", "id": "dato_label_1", "label": "Dato 1: texto" },
+    { "type": "text", "id": "dato_2", "label": "Dato 2" }, { "type": "text", "id": "dato_label_2", "label": "Dato 2: texto" },
+    { "type": "text", "id": "dato_3", "label": "Dato 3" }, { "type": "text", "id": "dato_label_3", "label": "Dato 3: texto" },
+    { "type": "textarea", "id": "ciencia_texto", "label": "Recuadro: texto" },
+    { "type": "text", "id": "ciencia_link", "label": "Recuadro: cita del estudio" },
+    { "type": "url", "id": "ciencia_url", "label": "Recuadro: link del estudio" },
+    { "type": "header", "content": "Calidad, comparación, garantía y ayuda" },
+    { "type": "text", "id": "etiqueta_titulo", "label": "Etiqueta: título", "default": "Información" },
+    { "type": "text", "id": "etiqueta_bajada", "label": "Etiqueta: bajada" },
+    { "type": "textarea", "id": "etiqueta_filas", "label": "Etiqueta: filas (Nombre|valor, una por línea)" },
+    { "type": "textarea", "id": "etiqueta_texto", "label": "Etiqueta: ingredientes o materiales" },
+    { "type": "text", "id": "etiqueta_destacado", "label": "Etiqueta: aviso en negrita" },
+    { "type": "text", "id": "col_nosotros", "label": "Tabla: columna del producto" },
+    { "type": "text", "id": "col_otros", "label": "Tabla: columna de la alternativa", "info": "Contra lo genérico, nunca contra una marca." },
+    { "type": "text", "id": "sello_texto", "label": "Sello giratorio", "info": "Vacío = la garantía corta de la configuración del tema." },
+    { "type": "textarea", "id": "ayuda_texto", "label": "Preguntas: texto de ayuda", "info": "Vacío = el horario de atención de la configuración." }
+  ],
+  "blocks": [
+    {
+      "type": "item", "name": "Ítem",
+      "settings": [
+        { "type": "text", "id": "titulo", "label": "Título (o pregunta)" },
+        { "type": "textarea", "id": "texto", "label": "Texto (o respuesta)" },
+        { "type": "text", "id": "valor", "label": "Valor (activos: dosis · tabla: producto)" },
+        { "type": "text", "id": "valor2", "label": "Valor 2 (tabla: alternativa)" },
+        { "type": "select", "id": "icono", "label": "Ícono", "default": "check", "options": [
+          { "value": "check", "label": "Check" }, { "value": "wave", "label": "Onda" }, { "value": "clock", "label": "Reloj" },
+          { "value": "nodes", "label": "Nodos" }, { "value": "flask", "label": "Laboratorio" }, { "value": "leaf", "label": "Hoja" },
+          { "value": "sprout", "label": "Brote" }, { "value": "shield", "label": "Escudo" }, { "value": "truck", "label": "Envío" },
+          { "value": "return", "label": "Devolución" }, { "value": "lock", "label": "Candado" }, { "value": "cup", "label": "Taza" },
+          { "value": "chat", "label": "Chat" }, { "value": "search", "label": "Lupa" }
+        ] },
+        { "type": "image_picker", "id": "imagen", "label": "Foto" },
+        { "type": "text", "id": "slot", "label": "Qué foto va acá (se ve en el editor si falta)" },
+        { "type": "text", "id": "alt", "label": "Texto alternativo" }
+      ]
+    }
+  ],
+  "presets": [ { "name": "TC · Contenido" } ]
+}
+{% endschema %}

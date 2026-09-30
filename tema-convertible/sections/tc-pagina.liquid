@@ -1,0 +1,18 @@
+{%- comment -%} Tema Convertible · Página de texto (políticas, sobre nosotros, arrepentimiento). {%- endcomment -%}
+<div class="lm tc">
+<section class="lm-sec" style="padding-top:32px">
+<div class="lm-wrap tc-page">
+  <div class="lm-head"><h1 class="lm-h2">{{ page.title }}</h1></div>
+  <div class="tc-rte">{{ page.content }}</div>
+</div>
+</section>
+</div>
+
+{% schema %}
+{
+  "name": "TC · Página",
+  "tag": "div",
+  "class": "tc-section",
+  "settings": []
+}
+{% endschema %}

@@ -1,0 +1,6 @@
+{
+  "sections": {
+    "main": { "type": "tc-articulo", "settings": {} }
+  },
+  "order": ["main"]
+}

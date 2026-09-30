@@ -1,0 +1,28 @@
+{%- comment -%}
+  Tema Convertible · acento de marca (el único color que cambia entre tiendas).
+  - scope: 'root'  → lo usa tc-vars para publicar el acento global en :root (--tc-a900 … --tc-a100).
+  - sin scope       → lo usan las secciones en su contenedor: style="{% render 'tc-accent', preset: section.settings.acento %}".
+    Con preset 'tema' (o vacío) no imprime nada y la sección hereda el acento del tema.
+  Presets con contraste verificado: 700 sobre blanco ≥ 7:1, blanco sobre 700 ≥ 4,5:1, 500 sobre tinte ≥ 4,5:1, 900 sobre 100 ≥ 7:1.
+{%- endcomment -%}
+{%- liquid
+  assign p = preset | default: 'tema'
+  if p == 'tema' and scope == 'root'
+    assign p = 'ciruela'
+  endif
+  if scope == 'root'
+    assign pre = '--tc-a'
+  else
+    assign pre = '--lm-brand-'
+  endif
+-%}
+{%- case p -%}
+  {%- when 'tema' -%}
+  {%- when 'salvia' -%}{{ pre }}900:#1c3a2c;{{ pre }}700:#2f5d46;{{ pre }}500:#44775c;{{ pre }}200:#d3e6da;{{ pre }}100:#eef6f1;--tc-accent-shadow:rgba(47,93,70,.28);
+  {%- when 'oceano' -%}{{ pre }}900:#132f4c;{{ pre }}700:#1f4f7a;{{ pre }}500:#33689b;{{ pre }}200:#d4e3f2;{{ pre }}100:#eef4fa;--tc-accent-shadow:rgba(31,79,122,.28);
+  {%- when 'terracota' -%}{{ pre }}900:#4a2112;{{ pre }}700:#8a3a1c;{{ pre }}500:#a9502c;{{ pre }}200:#f3dccf;{{ pre }}100:#fbf0ea;--tc-accent-shadow:rgba(138,58,28,.28);
+  {%- when 'grafito' -%}{{ pre }}900:#15151a;{{ pre }}700:#2b2b33;{{ pre }}500:#55555f;{{ pre }}200:#dedde3;{{ pre }}100:#f3f3f6;--tc-accent-shadow:rgba(43,43,51,.28);
+  {%- when 'violeta' -%}{{ pre }}900:#2a1b52;{{ pre }}700:#4b2e83;{{ pre }}500:#6b46a8;{{ pre }}200:#e4d9f5;{{ pre }}100:#f6f1fc;--tc-accent-shadow:rgba(75,46,131,.28);
+  {%- when 'personalizado' -%}{{ pre }}900:{{ settings.accent_900 }};{{ pre }}700:{{ settings.accent_700 }};{{ pre }}500:{{ settings.accent_500 }};{{ pre }}200:{{ settings.accent_200 }};{{ pre }}100:{{ settings.accent_100 }};--tc-accent-shadow:{{ settings.accent_700 | color_modify: 'alpha', 0.28 }};
+  {%- else -%}{{ pre }}900:#4a1320;{{ pre }}700:#7c1f33;{{ pre }}500:#a8384f;{{ pre }}200:#f3d6dc;{{ pre }}100:#fbeef1;--tc-accent-shadow:rgba(124,31,51,.28);
+{%- endcase -%}

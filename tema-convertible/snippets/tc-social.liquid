@@ -1,0 +1,8 @@
+{%- comment -%} Links a redes desde Tema → Redes. Uso: {% render 'tc-social' %} {%- endcomment -%}
+{%- capture links -%}
+  {%- if settings.social_instagram != blank -%}<a href="{{ settings.social_instagram }}" target="_blank" rel="noopener" aria-label="Instagram">{% render 'lm-icon', name: 'instagram' %}</a>{%- endif -%}
+  {%- if settings.social_tiktok != blank -%}<a href="{{ settings.social_tiktok }}" target="_blank" rel="noopener" aria-label="TikTok">{% render 'lm-icon', name: 'tiktok' %}</a>{%- endif -%}
+  {%- if settings.social_facebook != blank -%}<a href="{{ settings.social_facebook }}" target="_blank" rel="noopener" aria-label="Facebook">{% render 'lm-icon', name: 'facebook' %}</a>{%- endif -%}
+  {%- if settings.social_youtube != blank -%}<a href="{{ settings.social_youtube }}" target="_blank" rel="noopener" aria-label="YouTube">{% render 'lm-icon', name: 'youtube' %}</a>{%- endif -%}
+{%- endcapture -%}
+{%- if links != blank -%}<div class="tc-social">{{ links }}</div>{%- endif -%}

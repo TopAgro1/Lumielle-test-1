@@ -1,0 +1,179 @@
+{%- comment -%}
+  Tema Convertible · Oferta final. Cierra el hook y repite el selector de packs.
+  Usa el formulario de "TC · Compra" de la misma página: elegir un pack acá cambia el de arriba
+  y el botón suma al carrito sin salir de la página. La lista de valor se calcula con precios reales.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign threshold_cents = settings.free_shipping_threshold | times: 100
+  assign rec = s.pack_recomendado | default: 2
+  assign unidad = s.unidad | default: 'unidad'
+  assign unidades = s.unidades | default: 'unidades'
+
+  assign is_packs = false
+  unless product.has_only_default_variant
+    assign is_packs = true
+    for v in product.variants
+      assign vn = v.title | split: 'x' | last | strip | plus: 0
+      if vn == 0
+        assign is_packs = false
+        break
+      endif
+    endfor
+  endunless
+
+  assign base_price = 0
+  if is_packs
+    for v in product.variants
+      assign vn = v.title | split: 'x' | last | strip | plus: 0
+      if vn == 1
+        assign base_price = v.price
+      endif
+    endfor
+    if base_price == 0
+      assign fv = product.variants.first
+      assign fvn = fv.title | split: 'x' | last | strip | plus: 0
+      assign base_price = fv.price | divided_by: fvn
+    endif
+  endif
+
+  assign selected = product.selected_or_first_available_variant
+  assign rec_v = nil
+  if is_packs
+    for v in product.variants
+      if forloop.index == rec
+        assign rec_v = v
+        if v.available and product.selected_variant == nil
+          assign selected = v
+        endif
+      endif
+    endfor
+  endif
+
+  comment
+    Lista de valor del pack recomendado: unidades a precio suelto + envío (si el pack lo tiene gratis). Nada inventado.
+  endcomment
+  assign ship_flat = settings.ship_flat_rate | times: 100
+  assign stack_ok = false
+  if s.mostrar_valor and is_packs and rec_v and rec_v.price > 0 and base_price > 0
+    assign rec_n = rec_v.title | split: 'x' | last | strip | plus: 0
+    assign stack_units = base_price | times: rec_n
+    assign stack_ship = 0
+    if threshold_cents > 0 and rec_v.price >= threshold_cents
+      assign stack_ship = ship_flat
+    endif
+    assign stack_total = stack_units | plus: stack_ship
+    assign stack_save = stack_total | minus: rec_v.price
+    if stack_save > 0
+      assign stack_ok = true
+    endif
+  endif
+  assign tr_pct = 0
+  if settings.pay_transfer and settings.transfer_pct > 0
+    assign tr_pct = settings.transfer_pct
+  endif
+-%}
+<div class="lm tc" style="{% render 'tc-accent', preset: s.acento %}">
+<section class="lm-sec" id="oferta">
+<div class="lm-wrap">
+  <div class="lm-offer lm-reveal">
+    <div class="lm-offer__visual">
+      {%- if s.imagen != blank -%}
+        {{ s.imagen | image_url: width: 1200 | image_tag: loading: 'lazy', alt: s.imagen.alt, sizes: '(min-width: 990px) 40vw, 92vw', widths: '500, 800, 1200' }}
+      {%- elsif product.featured_image -%}
+        {{ product.featured_image | image_url: width: 900 | image_tag: loading: 'lazy', alt: '', class: 'is-product' }}
+      {%- else -%}
+        {% render 'tc-img', slot: 'Foto del producto o del pack', alt: '' %}
+      {%- endif -%}
+    </div>
+    <div class="lm-offer__body">
+      {%- if s.eyebrow != blank -%}<span class="lm-eyebrow">{{ s.eyebrow }}</span>{%- endif -%}
+      <h2>{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h2>
+      {%- if stack_ok -%}
+      <div class="tc-stack">
+        {%- if s.valor_titulo != blank -%}<span class="lm-eyebrow" style="padding:8px 0 2px">{{ s.valor_titulo | replace: '[pack]', rec_v.title }}</span>{%- endif -%}
+        <div class="tc-stack__row"><span>{% render 'lm-icon', name: 'check' %}{{ rec_n }} {{ unidades }} a precio suelto</span><span>{{ stack_units | money_without_trailing_zeros }}</span></div>
+        {%- if stack_ship > 0 -%}<div class="tc-stack__row"><span>{% render 'lm-icon', name: 'truck' %}Envío</span><span><s>{{ stack_ship | money_without_trailing_zeros }}</s> Gratis</span></div>{%- endif -%}
+        {%- assign extras = s.valor_extras | newline_to_br | split: '<br />' -%}
+        {%- for e in extras -%}{%- assign ep = e | strip | split: '|' -%}{%- if ep[0] != blank -%}<div class="tc-stack__row"><span>{% render 'lm-icon', name: 'check' %}{{ ep[0] | strip }}</span><span>{{ ep[1] | strip | default: 'Incluido' }}</span></div>{%- endif -%}{%- endfor -%}
+      </div>
+      <div class="tc-stack__total">
+        <span>Todo por separado: <s>{{ stack_total | money_without_trailing_zeros }}</s></span>
+        <span style="text-align:right"><b>{{ rec_v.price | money_without_trailing_zeros }}</b><br><span class="tc-stack__save">Ahorrás {{ stack_save | money_without_trailing_zeros }}</span></span>
+      </div>
+      {%- endif -%}
+      {%- unless product.has_only_default_variant -%}
+      <div class="lm-offer__packs" role="group" aria-label="{% if is_packs %}Elegí tu pack{% else %}Elegí una opción{% endif %}">
+        {%- for v in product.variants -%}
+          {%- liquid
+            assign save = 0
+            if is_packs
+              assign n = v.title | split: 'x' | last | strip | plus: 0
+              assign save = base_price | times: n | minus: v.price
+              if n == 1
+                assign vname = '1 ' | append: unidad
+              else
+                assign vname = n | append: ' ' | append: unidades
+              endif
+            else
+              assign vname = v.title
+              if v.compare_at_price > v.price
+                assign save = v.compare_at_price | minus: v.price
+              endif
+            endif
+          -%}
+          <button type="button" class="lm-opack{% if v.id == selected.id %} is-on{% endif %}" data-lm-pick="{{ v.id }}" {% unless v.available %}disabled{% endunless %} aria-pressed="{% if v.id == selected.id %}true{% else %}false{% endif %}">
+            <span class="lm-opack__radio" aria-hidden="true"></span>
+            <span class="lm-opack__main">{{ vname }}{% if is_packs and forloop.index == rec and s.texto_recomendado != blank %}<small>{{ s.texto_recomendado }}</small>{% endif %}{% unless v.available %}<small>Sin stock</small>{% endunless %}</span>
+            <span class="lm-opack__side">{{ v.price | money_without_trailing_zeros }}{% if save > 0 %}<small>Ahorrás {{ save | money_without_trailing_zeros }}</small>{% endif %}</span>
+          </button>
+        {%- endfor -%}
+      </div>
+      {%- endunless -%}
+      <button type="button" class="lm-btn lm-btn--light" data-lm-add {% unless selected.available %}disabled{% endunless %}><span data-lm-btn-label>{% if selected.available %}Agregar al carrito · {{ selected.price | money }}{% else %}Sin stock{% endif %}</span></button>
+      {%- if tr_pct > 0 -%}
+        {%- assign tr_off = selected.price | times: tr_pct | divided_by: 100 -%}{%- assign tr_price = selected.price | minus: tr_off -%}
+        <p class="tc-offer-risk">{% render 'lm-icon', name: 'lock' %}<span>Con transferencia pagás <b data-tc-transfer>{{ tr_price | money }}</b>{% if settings.transfer_code != blank %}: usá el código <b>{{ settings.transfer_code }}</b> en el checkout{% endif %}.</span></p>
+      {%- endif -%}
+      {%- if settings.pay_cod or settings.riesgo_texto != blank -%}
+        <p class="tc-offer-risk">{% render 'lm-icon', name: 'shield' %}<span>{% if settings.pay_cod %}<b>Pagás al recibir</b>, sin adelantar nada. {% endif %}{{ settings.riesgo_texto }}</span></p>
+      {%- endif -%}
+      <p class="lm-offer__note">{% if threshold_cents > 0 %}Envío gratis desde {{ threshold_cents | money_without_trailing_zeros }} · {% endif %}{% if settings.garantia_corta != blank %}{{ settings.garantia_corta }} · {% endif %}{% render 'pay-copy', format: 'micro' %}</p>
+    </div>
+  </div>
+</div>
+</section>
+{%- if s.legal != blank -%}
+<div class="lm-legal"><div class="lm-wrap"><p>{% render 'store-tokens', text: s.legal %}</p></div></div>
+{%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "TC · Oferta final",
+  "tag": "div",
+  "class": "tc-section",
+  "enabled_on": { "templates": ["product"] },
+  "settings": [
+    { "type": "select", "id": "acento", "label": "Color de acento", "default": "tema", "options": [
+      { "value": "tema", "label": "El del tema" }, { "value": "ciruela", "label": "Ciruela" }, { "value": "violeta", "label": "Violeta" }, { "value": "salvia", "label": "Salvia" },
+      { "value": "oceano", "label": "Océano" }, { "value": "terracota", "label": "Terracota" }, { "value": "grafito", "label": "Grafito" }
+    ] },
+    { "type": "paragraph", "content": "Necesita la sección TC · Compra en la misma página. Garantía, riesgo y transferencia: Tema → Configuración." },
+    { "type": "text", "id": "eyebrow", "label": "Volanta", "default": "Tu pack" },
+    { "type": "text", "id": "titulo", "label": "Título (cierra el hook del anuncio)", "default": "Cierre del hook." },
+    { "type": "text", "id": "titulo_it", "label": "Título: parte en itálica", "default": "La promesa, otra vez." },
+    { "type": "image_picker", "id": "imagen", "label": "Foto (vacío = foto del producto)" },
+    { "type": "text", "id": "unidad", "label": "Unidad (singular)", "default": "unidad" },
+    { "type": "text", "id": "unidades", "label": "Unidad (plural)", "default": "unidades" },
+    { "type": "range", "id": "pack_recomendado", "label": "Pack preseleccionado", "min": 1, "max": 3, "step": 1, "default": 2 },
+    { "type": "text", "id": "texto_recomendado", "label": "Etiqueta del pack preseleccionado", "default": "Recomendado" },
+    { "type": "header", "content": "Lista de valor (se calcula con los precios reales)" },
+    { "type": "checkbox", "id": "mostrar_valor", "label": "Mostrar lo que te llevás con el pack recomendado", "default": true },
+    { "type": "text", "id": "valor_titulo", "label": "Título de la lista", "default": "Con el [pack] te llevás" },
+    { "type": "textarea", "id": "valor_extras", "label": "Extras incluidos (Texto|valor, una por línea)", "info": "Solo cosas reales que ya das. El valor puede ser texto, ej.: Incluido." },
+    { "type": "textarea", "id": "legal", "label": "Texto legal al pie", "info": "Leyendas de la categoría (registro sanitario, uso externo, consulte a su médico)." }
+  ],
+  "presets": [ { "name": "TC · Oferta final" } ]
+}
+{% endschema %}

@@ -1,0 +1,76 @@
+{%- comment -%}
+  Tema Convertible · tokens de marca que salen de la configuración del tema.
+  Se renderiza una vez en el <head>: carga las dos familias elegidas y publica en :root
+  el acento (5 tonos), las familias y el peso de los titulares.
+  Todo el CSS (tc-base.css, tc.css) lee estas variables.
+{%- endcomment -%}
+{%- liquid
+  case settings.font_display
+    when 'fraunces'
+      assign fd_q = 'Fraunces:ital,wght@0,400;0,500;0,600;1,400'
+      assign fd_css = "'Fraunces', Georgia, serif"
+      assign fd_w = 500
+    when 'playfair'
+      assign fd_q = 'Playfair+Display:ital,wght@0,400;0,500;0,600;1,400'
+      assign fd_css = "'Playfair Display', Georgia, serif"
+      assign fd_w = 500
+    when 'instrument'
+      assign fd_q = 'Instrument+Serif:ital@0;1'
+      assign fd_css = "'Instrument Serif', Georgia, serif"
+      assign fd_w = 400
+    when 'cormorant'
+      assign fd_q = 'Cormorant+Garamond:ital,wght@0,500;0,600;1,500'
+      assign fd_css = "'Cormorant Garamond', Georgia, serif"
+      assign fd_w = 600
+    when 'sans'
+      assign fd_q = ''
+      assign fd_css = ''
+      assign fd_w = 600
+    else
+      assign fd_q = 'DM+Serif+Display:ital@0;1'
+      assign fd_css = "'DM Serif Display', Georgia, serif"
+      assign fd_w = 400
+  endcase
+
+  case settings.font_body
+    when 'inter'
+      assign fb_q = 'Inter:wght@400;500;600;700'
+      assign fb_css = "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif"
+    when 'dm_sans'
+      assign fb_q = 'DM+Sans:wght@400;500;600;700'
+      assign fb_css = "'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif"
+    when 'manrope'
+      assign fb_q = 'Manrope:wght@400;500;600;700'
+      assign fb_css = "Manrope, system-ui, -apple-system, 'Segoe UI', sans-serif"
+    when 'work_sans'
+      assign fb_q = 'Work+Sans:wght@400;500;600;700'
+      assign fb_css = "'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif"
+    when 'nunito_sans'
+      assign fb_q = 'Nunito+Sans:wght@400;500;600;700'
+      assign fb_css = "'Nunito Sans', system-ui, -apple-system, 'Segoe UI', sans-serif"
+    else
+      assign fb_q = 'Figtree:wght@400;500;600;700'
+      assign fb_css = "Figtree, system-ui, -apple-system, 'Segoe UI', sans-serif"
+  endcase
+  if fd_css == ''
+    assign fd_css = fb_css
+  endif
+
+  assign fonts_url = 'https://fonts.googleapis.com/css2?family=' | append: fb_q
+  if fd_q != ''
+    assign fonts_url = fonts_url | append: '&family=' | append: fd_q
+  endif
+  assign fonts_url = fonts_url | append: '&display=swap'
+-%}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="{{ fonts_url }}">
+<style>
+  :root{
+    {% render 'tc-accent', preset: settings.accent_preset, scope: 'root' %}
+    --tc-font-display:{{ fd_css }};
+    --tc-font-body:{{ fb_css }};
+    --tc-display-weight:{{ fd_w }};
+    --tc-logo-h:{{ settings.logo_height | default: 30 }}px;
+  }
+</style>

@@ -1,0 +1,6 @@
+{
+  "sections": {
+    "main": { "type": "tc-busqueda", "settings": {} }
+  },
+  "order": ["main"]
+}

@@ -1,0 +1,149 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Tema Convertible",
+    "theme_version": "1.0.0",
+    "theme_author": "Tema Convertible",
+    "theme_documentation_url": "https://github.com/TopAgro1/Lumielle-test-1",
+    "theme_support_url": "https://github.com/TopAgro1/Lumielle-test-1"
+  },
+  {
+    "name": "Marca",
+    "settings": [
+      { "type": "paragraph", "content": "Lo único que cambia de una tienda a otra: logo, color de acento y tipografías. El resto del tema ya está resuelto." },
+      { "type": "image_picker", "id": "logo", "label": "Logo", "info": "SVG o PNG de una sola tinta. Vacío = el nombre de la tienda escrito en la tipografía de titulares." },
+      { "type": "range", "id": "logo_height", "label": "Alto del logo", "min": 20, "max": 56, "step": 2, "unit": "px", "default": 30 },
+      { "type": "image_picker", "id": "favicon", "label": "Favicon", "info": "Cuadrado, 96 × 96 px." }
+    ]
+  },
+  {
+    "name": "Color de acento",
+    "settings": [
+      { "type": "paragraph", "content": "Un solo color de marca con cinco tonos. Todo lo demás (fondos, textos, bordes) es neutro y combina con cualquier acento." },
+      {
+        "type": "select",
+        "id": "accent_preset",
+        "label": "Acento",
+        "default": "ciruela",
+        "options": [
+          { "value": "ciruela", "label": "Ciruela (belleza, suplementos)" },
+          { "value": "violeta", "label": "Violeta (cosmética, antiedad)" },
+          { "value": "salvia", "label": "Salvia (natural, bienestar)" },
+          { "value": "oceano", "label": "Océano (deporte, hogar)" },
+          { "value": "terracota", "label": "Terracota (cocina, artesanal)" },
+          { "value": "grafito", "label": "Grafito (tecnología, premium)" },
+          { "value": "personalizado", "label": "Personalizado (los 5 colores de abajo)" }
+        ]
+      },
+      { "type": "header", "content": "Acento personalizado" },
+      { "type": "paragraph", "content": "Solo se usa si elegiste Personalizado. Contrastes mínimos: 700 sobre blanco 7:1 · blanco sobre 700 4,5:1 · 500 sobre el tinte 4,5:1 · 900 sobre 100 7:1. Si uno no llega, oscurecé ese tono." },
+      { "type": "color", "id": "accent_900", "label": "900 · bloques oscuros, hover", "default": "#4a1320" },
+      { "type": "color", "id": "accent_700", "label": "700 · botón, precio destacado", "default": "#7c1f33" },
+      { "type": "color", "id": "accent_500", "label": "500 · lo elegido, íconos, foco", "default": "#a8384f" },
+      { "type": "color", "id": "accent_200", "label": "200 · bordes suaves", "default": "#f3d6dc" },
+      { "type": "color", "id": "accent_100", "label": "100 · relleno del pack elegido", "default": "#fbeef1" }
+    ]
+  },
+  {
+    "name": "Tipografía",
+    "settings": [
+      {
+        "type": "select",
+        "id": "font_display",
+        "label": "Titulares",
+        "default": "dm_serif",
+        "options": [
+          { "value": "dm_serif", "label": "DM Serif Display" },
+          { "value": "fraunces", "label": "Fraunces" },
+          { "value": "playfair", "label": "Playfair Display" },
+          { "value": "instrument", "label": "Instrument Serif" },
+          { "value": "cormorant", "label": "Cormorant Garamond" },
+          { "value": "sans", "label": "La misma del texto (sans)" }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "font_body",
+        "label": "Texto e interfaz",
+        "default": "figtree",
+        "options": [
+          { "value": "figtree", "label": "Figtree" },
+          { "value": "inter", "label": "Inter" },
+          { "value": "dm_sans", "label": "DM Sans" },
+          { "value": "manrope", "label": "Manrope" },
+          { "value": "work_sans", "label": "Work Sans" },
+          { "value": "nunito_sans", "label": "Nunito Sans" }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Envío y despacho",
+    "settings": [
+      { "type": "paragraph", "content": "Estos valores tienen que ser idénticos a Configuración → Envío y entrega. Toda la tienda (ficha, carrito, textos con [envio_gratis_desde] y [envio_fijo]) los lee de acá." },
+      { "type": "number", "id": "free_shipping_threshold", "label": "Envío gratis desde (sin centavos)", "default": 0, "info": "0 = la tienda no promete envío gratis en ningún lado." },
+      { "type": "number", "id": "ship_flat_rate", "label": "Costo fijo de envío debajo del umbral (sin centavos)", "default": 0, "info": "0 = el carrito dice \"se calcula en el checkout\"." },
+      { "type": "text", "id": "despacho_texto", "label": "Despacho (línea de confianza)", "info": "Ej.: Despacho en 24-48 h hábiles. Vacío = no se muestra." },
+      { "type": "number", "id": "entrega_min", "label": "Entrega: mínimo de días hábiles", "default": 0, "info": "0 = no se muestra la fecha estimada." },
+      { "type": "number", "id": "entrega_max", "label": "Entrega: máximo de días hábiles", "default": 0 },
+      { "type": "checkbox", "id": "mostrar_despacho", "label": "Cuenta regresiva de despacho del día", "default": false, "info": "Solo si despachás en el día lo que entra antes del horario de corte." },
+      { "type": "range", "id": "corte_despacho", "label": "Horario de corte del despacho", "min": 0, "max": 23, "step": 1, "unit": "h", "default": 14 },
+      { "type": "range", "id": "tz_offset", "label": "Huso horario del depósito (UTC)", "min": -12, "max": 14, "step": 1, "default": -3, "info": "Argentina: -3 · México: -6 · Chile: -4 · España: 1 o 2." },
+      { "type": "textarea", "id": "feriados", "label": "Feriados sin despacho", "info": "Una fecha por línea, AAAA-MM-DD. Esos días no cuentan como hábiles." },
+      { "type": "collection", "id": "upsell_collection", "label": "Colección para sumar en el carrito", "info": "Opcional. Muestra hasta 3 productos que no estén en el carrito." }
+    ]
+  },
+  {
+    "name": "Medios de pago",
+    "settings": [
+      { "type": "paragraph", "content": "Tildá solo lo que hoy aparece en tu checkout. Los textos de la tienda ([medios_de_pago], [cuotas], \"pagás al recibir\") salen de acá." },
+      { "type": "checkbox", "id": "pay_card", "label": "Tarjeta de crédito y débito", "default": true },
+      { "type": "checkbox", "id": "pay_mp", "label": "Mercado Pago", "default": false },
+      { "type": "checkbox", "id": "pay_mp_credits", "label": "Cuotas sin Tarjeta de Mercado Pago", "default": false },
+      { "type": "checkbox", "id": "pay_cod", "label": "Efectivo contra entrega (pagás al recibir)", "default": false },
+      { "type": "checkbox", "id": "pay_transfer", "label": "Transferencia bancaria con descuento", "default": false },
+      { "type": "range", "id": "transfer_pct", "label": "Descuento por transferencia", "min": 0, "max": 30, "step": 1, "unit": "%", "default": 10 },
+      { "type": "text", "id": "transfer_code", "label": "Código de descuento de la transferencia", "info": "Tiene que existir en Descuentos con el mismo porcentaje." },
+      { "type": "checkbox", "id": "pay_installments_free", "label": "Cuotas sin interés", "default": false },
+      { "type": "range", "id": "installments_max", "label": "Cantidad de cuotas", "min": 2, "max": 18, "step": 1, "default": 3 }
+    ]
+  },
+  {
+    "name": "Garantía y prueba social",
+    "settings": [
+      { "type": "text", "id": "garantia_corta", "label": "Garantía corta", "info": "Ej.: 30 días de garantía. Tiene que coincidir con tu política de devoluciones. Vacío = no se muestra." },
+      { "type": "text", "id": "riesgo_texto", "label": "Frase de riesgo bajo el botón", "info": "Ej.: Si no te convence, tenés 30 días para devolverlo." },
+      { "type": "checkbox", "id": "reviews_real", "label": "Mostrar puntajes y cantidad de reseñas propias", "default": false, "info": "Activalo recién cuando esos números salgan de pedidos reales. Apagado, la tienda no muestra promedios ni contadores propios aunque estén cargados." }
+    ]
+  },
+  {
+    "name": "Contacto",
+    "settings": [
+      { "type": "url", "id": "whatsapp_url", "label": "Link de WhatsApp", "info": "Ej.: https://wa.me/5491100000000. Vacío = no aparece ningún botón de WhatsApp." },
+      { "type": "text", "id": "whatsapp_label", "label": "Texto del botón de WhatsApp", "default": "Escribinos por WhatsApp" },
+      { "type": "text", "id": "contact_email", "label": "Mail de contacto", "info": "Vacío = el mail de la tienda." },
+      { "type": "text", "id": "contact_hours", "label": "Horario de atención", "info": "Ej.: Lunes a sábado de 9 a 19 h." }
+    ]
+  },
+  {
+    "name": "Legales",
+    "settings": [
+      { "type": "text", "id": "legal_name", "label": "Razón social" },
+      { "type": "text", "id": "legal_tax_id", "label": "CUIT / RFC / RUT" },
+      { "type": "text", "id": "legal_address", "label": "Domicilio legal" },
+      { "type": "text", "id": "regret_url", "label": "Link del botón de arrepentimiento", "default": "/pages/arrepentimiento", "info": "Obligatorio en Argentina (Res. 424/2020). Vacío = no se muestra." },
+      { "type": "url", "id": "data_fiscal_url", "label": "Link de Data Fiscal (ARCA)" },
+      { "type": "image_picker", "id": "data_fiscal_image", "label": "QR de Data Fiscal" },
+      { "type": "textarea", "id": "legal_note", "label": "Nota legal del pie" }
+    ]
+  },
+  {
+    "name": "Redes",
+    "settings": [
+      { "type": "url", "id": "social_instagram", "label": "Instagram" },
+      { "type": "url", "id": "social_tiktok", "label": "TikTok" },
+      { "type": "url", "id": "social_facebook", "label": "Facebook" },
+      { "type": "url", "id": "social_youtube", "label": "YouTube" }
+    ]
+  }
+]

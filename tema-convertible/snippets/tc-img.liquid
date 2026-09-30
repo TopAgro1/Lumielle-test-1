@@ -1,0 +1,33 @@
+{%- comment -%}
+  Tema Convertible · foto con slot.
+  Si se eligió una imagen en el editor la muestra; si no, en el editor muestra un slot rayado que dice
+  qué foto va, y en la tienda publicada un recuadro liso del tono del acento (sin texto ni ícono).
+  Las fotos de cada marca se cargan desde el editor (Contenido → Archivos), nunca dentro del tema.
+  Uso: {% render 'tc-img', image: section.settings.imagen, slot: 'Foto: el gesto', alt: '…', class: 'lm-slide__photo', position: '50% 50%', eager: false, width: 1400 %}
+{%- endcomment -%}
+{%- liquid
+  assign pos = position | default: '50% 50%'
+  assign pos_style = 'object-position: ' | append: pos
+  assign w = width | default: 1400
+  if eager
+    assign loading = 'eager'
+  else
+    assign loading = 'lazy'
+  endif
+  assign img_alt = alt | default: image.alt
+-%}
+{%- if image != blank -%}
+  {%- if eager -%}
+    {{ image | image_url: width: w | image_tag: loading: loading, fetchpriority: 'high', alt: img_alt, class: class, sizes: '(min-width: 990px) 50vw, 92vw', widths: '400, 700, 1000, 1400', style: pos_style }}
+  {%- else -%}
+    {{ image | image_url: width: w | image_tag: loading: loading, alt: img_alt, class: class, sizes: '(min-width: 990px) 50vw, 92vw', widths: '400, 700, 1000, 1400', style: pos_style }}
+  {%- endif -%}
+{%- else -%}
+  {%- if request.design_mode -%}
+  <span class="tc-slot{% if class != blank %} {{ class }}{% endif %}" role="img" aria-label="{{ alt | default: slot | escape }}">
+    {%- render 'lm-icon', name: 'image' -%}{{ slot | default: 'Cargá una foto' }}<small>Elegila en el editor de temas, en esta sección.</small>
+  </span>
+  {%- else -%}
+  <span class="tc-slot tc-slot--live{% if class != blank %} {{ class }}{% endif %}" aria-hidden="true"></span>
+  {%- endif -%}
+{%- endif -%}

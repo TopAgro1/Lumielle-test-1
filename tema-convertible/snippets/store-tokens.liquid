@@ -1,0 +1,52 @@
+{%- comment -%}
+  Reemplaza marcadores en textos del editor para que montos y medios de pago salgan siempre
+  de la configuración del tema (una sola fuente de verdad, igual que el checkout):
+    [envio_gratis_desde] → umbral de envío gratis      (Tema → Envío y despacho)
+    [envio_fijo]         → costo fijo de envío          (Tema → Envío y despacho)
+    [medios_de_pago]     → medios activos               (Tema → Medios de pago)
+    [cuotas]             → texto de cuotas              (Tema → Medios de pago)
+    [garantia]           → garantía corta               (Tema → Garantía y prueba social)
+  Si un monto no está configurado, en el editor aparece un aviso y en la tienda un guion.
+  Uso: {% render 'store-tokens', text: block.settings.texto %}
+{%- endcomment -%}
+{%- liquid
+  assign t = text
+  if t contains '['
+    if request.design_mode
+      assign missing = '<mark class="tc-warn">configurá el envío en Tema → Envío y despacho</mark>'
+    else
+      assign missing = '—'
+    endif
+    if settings.free_shipping_threshold > 0
+      assign free_from = settings.free_shipping_threshold | times: 100 | money_without_trailing_zeros
+    else
+      assign free_from = missing
+    endif
+    if settings.ship_flat_rate > 0
+      assign flat = settings.ship_flat_rate | times: 100 | money_without_trailing_zeros
+    else
+      assign flat = missing
+    endif
+    assign t = t | replace: '[envio_fijo]', flat | replace: '[envio_gratis_desde]', free_from
+    if t contains '[medios_de_pago]'
+      capture pays
+        render 'pay-copy', format: 'sentence'
+      endcapture
+      assign t = t | replace: '[medios_de_pago]', pays
+    endif
+    if t contains '[cuotas]'
+      capture cuotas
+        render 'pay-copy', format: 'installments'
+      endcapture
+      assign cuotas = cuotas | strip
+      if cuotas == blank
+        assign cuotas = 'Pagás en el checkout con el medio que elijas'
+      endif
+      assign t = t | replace: '[cuotas]', cuotas
+    endif
+    if t contains '[garantia]'
+      assign t = t | replace: '[garantia]', settings.garantia_corta
+    endif
+  endif
+-%}
+{{- t -}}

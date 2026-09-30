@@ -1,0 +1,153 @@
+{%- comment -%}
+  Contenido del carrito (carrito lateral y página /cart).
+  Envío: espejo de Tema → Envío y despacho (umbral y costo fijo iguales al perfil de envío de Shopify).
+  Upsells: 1) pasar al pack siguiente pagando la diferencia (variantes "Pack x1/x2/x3"),
+           2) hasta 3 productos de la colección elegida en Tema → Envío y despacho.
+  Los botones los maneja assets/tc.js (data-tc-line, data-tc-swap, data-tc-add).
+{%- endcomment -%}
+{%- liquid
+  assign ship_threshold = settings.free_shipping_threshold | times: 100
+  assign ship_flat = settings.ship_flat_rate | times: 100
+  assign ship_missing = ship_threshold | minus: cart.total_price
+  assign ship_free = false
+  if ship_threshold > 0 and ship_missing <= 0
+    assign ship_free = true
+  endif
+  assign ship_pct = 0
+  if ship_threshold > 0
+    assign ship_pct = cart.total_price | times: 100 | divided_by: ship_threshold
+    if ship_pct > 100
+      assign ship_pct = 100
+    endif
+  endif
+  assign ship_known = false
+  if ship_free or ship_flat > 0
+    assign ship_known = true
+  endif
+  assign total_est = cart.total_price
+  if ship_known and ship_free == false
+    assign total_est = cart.total_price | plus: ship_flat
+  endif
+-%}
+<div class="tc-cart" data-tc-cart-body>
+  {%- if ship_threshold > 0 -%}
+  <div class="tc-cart__ship lm-bar{% if ship_free %} is-ok{% endif %}">
+    <span class="lm-bar__msg">
+      {%- if cart.item_count == 0 -%}Envío gratis desde {{ ship_threshold | money_without_trailing_zeros }}
+      {%- elsif ship_free -%}Tenés envío gratis en este pedido
+      {%- else -%}Te faltan {{ ship_missing | money }} para el envío gratis
+      {%- endif -%}
+    </span>
+    <div class="lm-bar__track"><div class="lm-bar__fill" style="width:{{ ship_pct }}%"></div></div>
+  </div>
+  {%- endif -%}
+
+  <div class="tc-cart__items">
+    {%- if cart.item_count == 0 -%}
+      <div class="tc-cart__empty">
+        <p class="lm-lead">Tu carrito está vacío.</p>
+        <a class="lm-btn lm-btn--auto" href="{{ routes.all_products_collection_url }}">Ver productos{% render 'lm-icon', name: 'arrow' %}</a>
+      </div>
+    {%- else -%}
+      {%- for item in cart.items -%}
+        <div class="lm-line">
+          <span class="lm-line__img">{%- if item.image -%}{{ item.image | image_url: width: 160 | image_tag: alt: '', loading: 'lazy', width: 72, height: 72 }}{%- endif -%}</span>
+          <span class="lm-line__txt">
+            <a href="{{ item.url }}">{{ item.product.title }}</a>
+            {%- unless item.product.has_only_default_variant -%}<small>{{ item.variant.title }}</small>{%- endunless -%}
+            {%- for d in item.line_level_discount_allocations -%}<small class="tc-cart__disc">{{ d.discount_application.title }} (−{{ d.amount | money }})</small>{%- endfor -%}
+            <span class="tc-qty" role="group" aria-label="Cantidad de {{ item.product.title | escape }}">
+              <button type="button" data-tc-line="{{ forloop.index }}" data-tc-qty="{{ item.quantity | minus: 1 }}" aria-label="Restar una unidad">{% render 'lm-icon', name: 'minus' %}</button>
+              <span aria-live="polite">{{ item.quantity }}</span>
+              <button type="button" data-tc-line="{{ forloop.index }}" data-tc-qty="{{ item.quantity | plus: 1 }}" aria-label="Sumar una unidad">{% render 'lm-icon', name: 'plus' %}</button>
+            </span>
+          </span>
+          <span class="lm-line__price">
+            {%- if item.original_line_price > item.final_line_price -%}<s>{{ item.original_line_price | money }}</s>{%- endif -%}
+            {{ item.final_line_price | money }}
+            <button type="button" class="tc-cart__rm" data-tc-line="{{ forloop.index }}" data-tc-qty="0">Quitar<span class="tc-sr"> {{ item.product.title | escape }}</span></button>
+          </span>
+        </div>
+      {%- endfor -%}
+
+      {%- comment -%} Antes de pagar: pasar al pack siguiente pagando solo la diferencia. {%- endcomment -%}
+      {%- for item in cart.items -%}
+        {%- assign cur_n = item.variant.title | split: 'x' | last | strip | plus: 0 -%}
+        {%- if item.quantity == 1 and cur_n > 0 and item.product.variants.size > 1 -%}
+          {%- assign next_v = nil -%}{%- assign found = false -%}
+          {%- for v in item.product.variants -%}
+            {%- if found and next_v == nil and v.available -%}{%- assign next_v = v -%}{%- endif -%}
+            {%- if v.id == item.variant_id -%}{%- assign found = true -%}{%- endif -%}
+          {%- endfor -%}
+          {%- if next_v and next_v.price > item.variant.price -%}
+            {%- assign extra = next_v.price | minus: item.variant.price -%}
+            {%- assign next_n = next_v.title | split: 'x' | last | strip | plus: 0 -%}
+            {%- assign unit_full = item.variant.price | divided_by: cur_n | times: next_n -%}
+            {%- assign bump_save = unit_full | minus: next_v.price -%}
+            <div class="lm-bump">
+              <div>
+                <span class="lm-eyebrow">Antes de pagar</span>
+                <b>Pasá a {{ next_v.title | downcase }} por {{ extra | money_without_trailing_zeros }} más</b>
+                {%- if bump_save > 0 -%}<small>Ahorrás {{ bump_save | money_without_trailing_zeros }} frente a comprarlas sueltas</small>{%- endif -%}
+              </div>
+              <button type="button" class="lm-btn" data-tc-swap-line="{{ forloop.index }}" data-tc-swap-id="{{ next_v.id }}">Sumar</button>
+            </div>
+            {%- break -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+
+      {%- assign cart_product_ids = cart.items | map: 'product_id' -%}
+      {%- assign up = settings.upsell_collection -%}
+      {%- if up != blank and up.products_count > 0 -%}
+        {%- capture up_rows -%}
+          {%- assign shown = 0 -%}
+          {%- for p in up.products -%}
+            {%- unless cart_product_ids contains p.id -%}
+              {%- if shown < 3 and p.available -%}
+                {%- assign v = p.selected_or_first_available_variant -%}
+                <div class="tc-upsell">
+                  <span class="lm-line__img">{%- if p.featured_image -%}{{ p.featured_image | image_url: width: 120 | image_tag: alt: '', loading: 'lazy', width: 48, height: 48 }}{%- endif -%}</span>
+                  <span class="lm-line__txt"><a href="{{ p.url }}">{{ p.title }}</a><small>{{ v.price | money }}</small></span>
+                  <button type="button" class="lm-btn lm-btn--ghost" data-tc-add="{{ v.id }}">Sumar<span class="tc-sr"> {{ p.title | escape }}</span></button>
+                </div>
+                {%- assign shown = shown | plus: 1 -%}
+              {%- endif -%}
+            {%- endunless -%}
+          {%- endfor -%}
+        {%- endcapture -%}
+        {%- if up_rows != blank -%}
+          <div class="tc-upsells"><span class="lm-eyebrow">Completá tu pedido</span>{{ up_rows }}</div>
+        {%- endif -%}
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+
+  {%- if cart.item_count > 0 -%}
+  <div class="tc-cart__foot">
+    <div class="tc-cart__row"><span>Subtotal</span><span>{{ cart.total_price | money }}</span></div>
+    <div class="tc-cart__row">
+      <span>Envío</span>
+      {%- if ship_free -%}<span class="tc-cart__free">Gratis</span>
+      {%- elsif ship_flat > 0 -%}<span>{{ ship_flat | money }}</span>
+      {%- else -%}<span>Se calcula en el checkout</span>
+      {%- endif -%}
+    </div>
+    {%- if ship_known -%}
+    <div class="tc-cart__row tc-cart__total">
+      <span>Total</span>
+      <span><b>{{ total_est | money }}</b>
+        {%- if settings.pay_installments_free -%}
+          {%- assign n_c = settings.installments_max | default: 3 -%}
+          <small>{{ n_c }} cuotas sin interés de {{ total_est | divided_by: n_c | money }}</small>
+        {%- endif -%}
+      </span>
+    </div>
+    {%- endif -%}
+    <form action="{{ routes.cart_url }}" method="post" class="tc-cart__checkout">
+      <button type="submit" name="checkout" class="lm-btn">{% render 'lm-icon', name: 'lock' %}Finalizar compra</button>
+    </form>
+    <p class="tc-pays">{% render 'pay-copy', format: 'micro' %}{% if settings.garantia_corta != blank %} · {{ settings.garantia_corta }}{% endif %}</p>
+  </div>
+  {%- endif -%}
+</div>

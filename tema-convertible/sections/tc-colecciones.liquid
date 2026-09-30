@@ -1,0 +1,30 @@
+{%- comment -%} Tema Convertible · Lista de colecciones. {%- endcomment -%}
+<div class="lm tc">
+<section class="lm-sec" style="padding-top:32px">
+<div class="lm-wrap">
+  <div class="lm-head"><h1 class="lm-h2">{{ section.settings.titulo }}</h1></div>
+  <div class="tc-grid">
+    {%- for c in collections -%}
+      <a class="tc-pcard" href="{{ c.url }}" style="text-decoration:none">
+        <span class="tc-pcard__media">
+          {%- if c.featured_image -%}{{ c.featured_image | image_url: width: 800 | image_tag: loading: 'lazy', alt: '' }}{%- elsif c.products.first.featured_image -%}{{ c.products.first.featured_image | image_url: width: 800 | image_tag: loading: 'lazy', alt: '' }}{%- else -%}{% render 'tc-img', slot: 'Foto de la colección', alt: '' %}{%- endif -%}
+        </span>
+        <span class="tc-pcard__title" style="color:var(--lm-ink)">{{ c.title }}</span>
+        <span class="lm-small">{{ c.products_count }} productos</span>
+      </a>
+    {%- endfor -%}
+  </div>
+</div>
+</section>
+</div>
+
+{% schema %}
+{
+  "name": "TC · Colecciones",
+  "tag": "div",
+  "class": "tc-section",
+  "settings": [
+    { "type": "text", "id": "titulo", "label": "Título", "default": "Colecciones" }
+  ]
+}
+{% endschema %}

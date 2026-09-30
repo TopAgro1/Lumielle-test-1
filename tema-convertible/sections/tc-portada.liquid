@@ -1,0 +1,97 @@
+{%- comment -%}
+  Tema Convertible · Portada de la home.
+  Arriba del pliegue en 390 px: foto del gesto, volanta, titular con la promesa, bajada, un botón y la línea
+  de confianza (envío, garantía y pago reales). Debajo, un acceso por producto con su propio hook.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign cta_url = s.cta_url
+  if cta_url == blank and s.cta_producto != blank
+    assign cta_url = s.cta_producto.url
+  endif
+  assign cta2_url = s.cta2_url | default: settings.whatsapp_url
+-%}
+<div class="lm tc" style="{% render 'tc-accent', preset: s.acento %}">
+<section class="tc-hh">
+<div class="lm-wrap">
+<div class="tc-hh__grid">
+  <div class="tc-hh__media lm-in">
+    {% render 'tc-img', image: s.imagen, slot: s.slot, alt: s.alt, position: s.posicion, eager: true, width: 1600 %}
+    {%- if s.foto_tag != blank -%}<span class="lm-photo__tag">{{ s.foto_tag }}</span>{%- endif -%}
+  </div>
+  <div class="tc-hh__body">
+    {%- if s.eyebrow != blank -%}<span class="lm-eyebrow lm-in">{{ s.eyebrow }}</span>{%- endif -%}
+    <h1 class="lm-in lm-in--2">{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h1>
+    {%- if s.texto != blank -%}<p class="lm-desire lm-in lm-in--3">{% render 'store-tokens', text: s.texto %}</p>{%- endif -%}
+    <div class="tc-hh__ctas lm-in lm-in--4">
+      {%- if s.cta_label != blank -%}<a href="{{ cta_url | default: '#productos' }}" class="lm-btn lm-shine">{{ s.cta_label }}{% render 'lm-icon', name: 'arrow' %}</a>{%- endif -%}
+      {%- if s.cta2_label != blank and cta2_url != blank -%}<a href="{{ cta2_url }}" class="lm-btn lm-btn--ghost"{% if cta2_url contains 'http' %} target="_blank" rel="noopener"{% endif %}>{% render 'lm-icon', name: 'chat' %}{{ s.cta2_label }}</a>{%- endif -%}
+    </div>
+    <div class="lm-in lm-in--4">{% render 'tc-trust' %}</div>
+    {%- assign picks = section.blocks | where: 'type', 'producto' -%}
+    {%- if picks.size > 0 -%}
+    <div class="tc-hh__picks">
+      {%- for b in picks -%}
+        {%- assign p = b.settings.producto -%}
+        {%- if p != blank -%}
+          <a class="tc-pick" href="{{ p.url }}" {{ b.shopify_attributes }}>
+            <span class="tc-pick__img">
+              {%- if b.settings.imagen != blank -%}{{ b.settings.imagen | image_url: width: 500 | image_tag: loading: 'lazy', alt: '' }}{%- elsif p.featured_image -%}{{ p.featured_image | image_url: width: 500 | image_tag: loading: 'lazy', alt: '' }}{%- else -%}{% render 'tc-img', slot: 'Foto del producto', alt: '' %}{%- endif -%}
+            </span>
+            {%- if b.settings.volanta != blank -%}<small>{{ b.settings.volanta }}</small>{%- endif -%}
+            <b>{{ b.settings.hook | default: p.title }}</b>
+            {%- if p.price > 0 -%}<em>{% if p.price_varies %}Desde {% endif %}{{ p.price_min | money }}</em>{%- else -%}<em>Muy pronto</em>{%- endif -%}
+          </a>
+        {%- elsif request.design_mode -%}
+          <span class="tc-pick" {{ b.shopify_attributes }}><span class="tc-pick__img">{% render 'tc-img', slot: 'Elegí un producto en este bloque', alt: '' %}</span><b>Acceso a producto</b></span>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+    {%- endif -%}
+  </div>
+</div>
+</div>
+</section>
+</div>
+
+{% schema %}
+{
+  "name": "TC · Portada (home)",
+  "tag": "div",
+  "class": "tc-section",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "select", "id": "acento", "label": "Color de acento", "default": "tema", "options": [
+      { "value": "tema", "label": "El del tema" }, { "value": "ciruela", "label": "Ciruela" }, { "value": "violeta", "label": "Violeta" }, { "value": "salvia", "label": "Salvia" },
+      { "value": "oceano", "label": "Océano" }, { "value": "terracota", "label": "Terracota" }, { "value": "grafito", "label": "Grafito" }
+    ] },
+    { "type": "text", "id": "eyebrow", "label": "Volanta" },
+    { "type": "text", "id": "titulo", "label": "Titular (la promesa)", "default": "La promesa de tu marca," },
+    { "type": "text", "id": "titulo_it", "label": "Titular: parte en itálica", "default": "en una frase." },
+    { "type": "textarea", "id": "texto", "label": "Bajada", "info": "Podés usar [envio_gratis_desde] y [garantia]." },
+    { "type": "text", "id": "cta_label", "label": "Botón principal", "default": "Ver los productos" },
+    { "type": "product", "id": "cta_producto", "label": "Botón principal: producto" },
+    { "type": "text", "id": "cta_url", "label": "Botón principal: link (vacío = el producto o la lista)" },
+    { "type": "text", "id": "cta2_label", "label": "Botón secundario", "info": "Vacío = sin botón secundario." },
+    { "type": "text", "id": "cta2_url", "label": "Botón secundario: link (vacío = WhatsApp de la configuración)" },
+    { "type": "header", "content": "Foto" },
+    { "type": "image_picker", "id": "imagen", "label": "Foto del gesto" },
+    { "type": "text", "id": "slot", "label": "Qué foto va acá (se ve en el editor si falta)", "default": "Foto horizontal: una persona usando el producto" },
+    { "type": "text", "id": "alt", "label": "Texto alternativo" },
+    { "type": "text", "id": "posicion", "label": "Encuadre (object-position)", "default": "50% 40%" },
+    { "type": "text", "id": "foto_tag", "label": "Etiqueta sobre la foto" }
+  ],
+  "blocks": [
+    {
+      "type": "producto", "name": "Acceso a producto",
+      "settings": [
+        { "type": "product", "id": "producto", "label": "Producto" },
+        { "type": "text", "id": "volanta", "label": "Volanta" },
+        { "type": "text", "id": "hook", "label": "Hook corto del producto" },
+        { "type": "image_picker", "id": "imagen", "label": "Foto (vacío = la del producto)" }
+      ]
+    }
+  ],
+  "presets": [ { "name": "TC · Portada (home)" } ]
+}
+{% endschema %}

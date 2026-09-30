@@ -1,0 +1,29 @@
+{%- comment -%}
+  Tema Convertible · Carrito lateral (uno solo para toda la tienda).
+  El contenido sale de snippets/tc-cart-items y se refresca con la Section Rendering API (assets/tc.js).
+  Accesible: diálogo modal, foco atrapado, Escape cierra y el foco vuelve al botón que lo abrió.
+{%- endcomment -%}
+<div class="tc-drawer" data-tc-drawer role="dialog" aria-modal="true" aria-labelledby="tc-drawer-title" aria-hidden="true">
+  <button type="button" class="tc-drawer__overlay" data-tc-drawer-close tabindex="-1" aria-label="Cerrar carrito"></button>
+  <div class="tc-drawer__panel">
+    <div class="tc-drawer__head">
+      <h2 id="tc-drawer-title">Tu carrito</h2>
+      <button type="button" class="tc-iconbtn" data-tc-drawer-close aria-label="Cerrar carrito">{% render 'lm-icon', name: 'close' %}</button>
+    </div>
+    <div class="tc-drawer__ok" data-tc-drawer-ok role="status" hidden><i>{% render 'lm-icon', name: 'check' %}</i>Listo, lo sumaste al carrito</div>
+    <p class="tc-drawer__err" data-tc-drawer-err role="alert" hidden></p>
+    <div class="tc-drawer__content" data-tc-drawer-content>
+      {% render 'tc-cart-items' %}
+    </div>
+    <span data-tc-count-src hidden>{{ cart.item_count }}</span>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "TC · Carrito lateral",
+  "tag": "div",
+  "class": "tc-section tc-section--drawer",
+  "settings": []
+}
+{% endschema %}

@@ -1,0 +1,19 @@
+{
+  "general": {
+    "skip": "Ir al contenido",
+    "search": { "placeholder": "Buscar productos" }
+  },
+  "cart": {
+    "general": {
+      "title": "Tu carrito",
+      "checkout": "Finalizar compra",
+      "empty": "Tu carrito está vacío"
+    }
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Agregar al carrito",
+      "sold_out": "Sin stock"
+    }
+  }
+}

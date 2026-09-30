@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="canonical" href="{{ canonical_url }}">
+    {%- if settings.favicon != blank -%}
+      <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 96, height: 96 }}">
+    {%- endif -%}
+    <title>{{ page_title }}{% if current_tags %} &ndash; {{ current_tags | join: ', ' }}{% endif %}{% if current_page != 1 %} &ndash; Página {{ current_page }}{% endif %}{% unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless %}</title>
+    {%- if page_description -%}<meta name="description" content="{{ page_description | escape }}">{%- endif -%}
+    {% render 'tc-meta' %}
+    {% render 'tc-vars' %}
+    {{ 'tc-base.css' | asset_url | stylesheet_tag }}
+    {{ 'tc.css' | asset_url | stylesheet_tag }}
+    <script type="application/json" id="tc-settings">
+      {
+        "moneyFormat": {{ shop.money_format | json }},
+        "threshold": {{ settings.free_shipping_threshold | times: 100 | json }},
+        "flat": {{ settings.ship_flat_rate | times: 100 | json }},
+        "transferPct": {% if settings.pay_transfer %}{{ settings.transfer_pct | json }}{% else %}0{% endif %},
+        "mostrarDespacho": {{ settings.mostrar_despacho | json }},
+        "corte": {{ settings.corte_despacho | json }},
+        "entregaMin": {{ settings.entrega_min | json }},
+        "entregaMax": {{ settings.entrega_max | json }},
+        "tz": {{ settings.tz_offset | json }},
+        "feriados": {{ settings.feriados | newline_to_br | strip_newlines | split: '<br />' | json }},
+        "cartSection": "tc-carrito"
+      }
+    </script>
+    <script src="{{ 'tc.js' | asset_url }}" defer></script>
+    {{ content_for_header }}
+    <!-- Píxel de Meta y otras etiquetas: conectalos desde Configuración → Eventos de clientes o con la app del canal, no pegándolos acá. -->
+  </head>
+  <body class="lm tc template-{{ template.name }}{% if template.suffix %} template-{{ template.name }}--{{ template.suffix }}{% endif %}">
+    <a class="tc-skip" href="#MainContent">Ir al contenido</a>
+    {% sections 'header-group' %}
+    <main id="MainContent" tabindex="-1">
+      {{ content_for_layout }}
+    </main>
+    {% sections 'footer-group' %}
+    {% section 'tc-carrito' %}
+  </body>
+</html>

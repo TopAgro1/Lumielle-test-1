@@ -1,0 +1,360 @@
+{
+  "sections": {
+    "compra": {
+      "type": "tc-compra",
+      "blocks": {
+        "slide_1": {
+          "type": "slide",
+          "settings": {
+            "slot": "Foto: el producto en uso (el gesto del anuncio)",
+            "alt": "",
+            "posicion": "50% 50%"
+          }
+        },
+        "slide_2": {
+          "type": "slide",
+          "settings": {
+            "slot": "Foto: el resultado o la sensación, sin antes/después exagerado",
+            "alt": "",
+            "posicion": "50% 50%"
+          }
+        },
+        "info_2": {
+          "type": "info",
+          "settings": {
+            "titulo": "Modo de uso",
+            "texto": "<p>Cómo se usa, en dos o tres frases.</p>"
+          }
+        },
+        "info_3": {
+          "type": "info",
+          "settings": {
+            "titulo": "Envíos y devoluciones",
+            "texto": "<p>Envío gratis desde [envio_gratis_desde]. Debajo de ese monto, [envio_fijo] fijos. [garantia].</p>"
+          }
+        }
+      },
+      "block_order": [
+        "slide_1",
+        "slide_2",
+        "info_2",
+        "info_3"
+      ],
+      "settings": {
+        "acento": "tema",
+        "titulo_modo": "hook",
+        "hook": "",
+        "hook_it": "",
+        "etiqueta": "",
+        "detalle": "",
+        "deseo": "",
+        "modo_variantes": "auto",
+        "unidad": "unidad",
+        "unidades": "unidades",
+        "pack_recomendado": 2,
+        "texto_recomendado": "Recomendado",
+        "packs_titulo": "Elegí tu pack",
+        "packs_sub": "Más unidades, menos por unidad",
+        "mostrar_incremento": true,
+        "mostrar_descripcion": true,
+        "menu": "Opiniones|#opiniones\nCómo se usa|#como-se-usa\nPreguntas|#preguntas"
+      }
+    },
+    "opiniones": {
+      "type": "tc-opiniones",
+      "settings": {
+        "acento": "tema",
+        "ancla": "opiniones",
+        "eyebrow": "Opiniones",
+        "titulo": "Lo que dicen de este producto",
+        "texto": "Solo mostramos opiniones reales, siempre con su fuente.",
+        "fuente_mostrar": false,
+        "formulario": true
+      }
+    },
+    "dolor": {
+      "type": "tc-bloques",
+      "blocks": {
+        "it_1": {
+          "type": "item",
+          "settings": {
+            "titulo": "Primera situación",
+            "texto": "El problema con las palabras de tu clienta: lo que le pasa, no lo que vendés."
+          }
+        },
+        "it_2": {
+          "type": "item",
+          "settings": {
+            "titulo": "Segunda situación",
+            "texto": "Otra escena concreta de su día donde aparece el problema."
+          }
+        },
+        "it_3": {
+          "type": "item",
+          "settings": {
+            "titulo": "Tercera situación",
+            "texto": "La consecuencia que más le molesta."
+          }
+        }
+      },
+      "block_order": [
+        "it_1",
+        "it_2",
+        "it_3"
+      ],
+      "settings": {
+        "layout": "problema",
+        "acento": "tema",
+        "fondo": "blanco",
+        "eyebrow": "¿Te suena?",
+        "titulo": "El problema, dicho como",
+        "titulo_it": "lo diría tu clienta.",
+        "texto": "Capa 1 de la página: el dolor. Validá lo que siente, sin culparla.",
+        "cita": "Una frase de cierre que valide.",
+        "slot": "Foto: la situación del problema, con una persona real",
+        "posicion": "50% 40%"
+      }
+    },
+    "porque": {
+      "type": "tc-bloques",
+      "blocks": {
+        "it_1": {
+          "type": "item",
+          "settings": {
+            "icono": "wave",
+            "titulo": "Primer motivo",
+            "texto": "Por qué pasa, en una frase simple."
+          }
+        },
+        "it_2": {
+          "type": "item",
+          "settings": {
+            "icono": "clock",
+            "titulo": "Segundo motivo",
+            "texto": "Qué lo empeora con el tiempo."
+          }
+        },
+        "it_3": {
+          "type": "item",
+          "settings": {
+            "icono": "nodes",
+            "titulo": "Tercer motivo",
+            "texto": "Qué hace falta para resolverlo."
+          }
+        }
+      },
+      "block_order": [
+        "it_1",
+        "it_2",
+        "it_3"
+      ],
+      "settings": {
+        "layout": "mecanismo",
+        "acento": "tema",
+        "fondo": "tinte",
+        "ancla": "por-que",
+        "eyebrow": "Por qué importa",
+        "titulo": "El mecanismo,",
+        "titulo_it": "explicado simple.",
+        "texto": "Capa 2: por qué pasa. Si hay una fuente citable, enlazala abajo.",
+        "slot": "Foto: detalle de la zona o del gesto, luz natural"
+      }
+    },
+    "friccion": {
+      "type": "tc-bloques",
+      "blocks": {
+        "it_1": {
+          "type": "item",
+          "settings": {
+            "titulo": "Primera fricción",
+            "texto": "Lo incómodo del gesto de siempre."
+          }
+        },
+        "it_2": {
+          "type": "item",
+          "settings": {
+            "titulo": "Segunda fricción",
+            "texto": "Lo que hace que se abandone."
+          }
+        },
+        "it_3": {
+          "type": "item",
+          "settings": {
+            "titulo": "Tercera fricción",
+            "texto": "Lo que confunde al elegir."
+          }
+        }
+      },
+      "block_order": [
+        "it_1",
+        "it_2",
+        "it_3"
+      ],
+      "settings": {
+        "layout": "fricciones",
+        "acento": "tema",
+        "fondo": "blanco",
+        "eyebrow": "Por qué no se resuelve",
+        "titulo": "No es falta de ganas.",
+        "titulo_it": "Es el formato.",
+        "texto": "Capa 3: la fricción. Lo que hace que hoy no se resuelva.",
+        "cita": "Lo que no es cómodo no se vuelve rutina."
+      }
+    },
+    "solucion": {
+      "type": "tc-bloques",
+      "settings": {
+        "layout": "solucion",
+        "acento": "tema",
+        "fondo": "blanco",
+        "sin_margen_arriba": true,
+        "eyebrow": "La solución",
+        "titulo": "El producto responde",
+        "titulo_it": "a cada fricción.",
+        "texto": "Qué es, cómo resuelve cada fricción y por qué se sostiene en el tiempo.",
+        "chips": "Beneficio 1 | Beneficio 2 | Beneficio 3",
+        "cta_label": "Elegir mi pack",
+        "cta_url": "#comprar"
+      }
+    },
+    "pasos": {
+      "type": "tc-bloques",
+      "blocks": {
+        "it_1": {
+          "type": "item",
+          "settings": {
+            "titulo": "Primer paso",
+            "texto": "Una frase.",
+            "slot": "Foto: primer paso"
+          }
+        },
+        "it_2": {
+          "type": "item",
+          "settings": {
+            "titulo": "Segundo paso",
+            "texto": "Una frase.",
+            "slot": "Foto: segundo paso"
+          }
+        },
+        "it_3": {
+          "type": "item",
+          "settings": {
+            "titulo": "Tercer paso",
+            "texto": "Una frase: lo que suma es la constancia.",
+            "slot": "Foto: el producto en su lugar de uso"
+          }
+        }
+      },
+      "block_order": [
+        "it_1",
+        "it_2",
+        "it_3"
+      ],
+      "settings": {
+        "layout": "pasos",
+        "acento": "tema",
+        "fondo": "tinte",
+        "ancla": "como-se-usa",
+        "eyebrow": "Cómo se usa",
+        "titulo": "Así de fácil",
+        "cta_label": "Elegir mi pack"
+      }
+    },
+    "garantia": {
+      "type": "tc-bloques",
+      "settings": {
+        "layout": "garantia",
+        "acento": "tema",
+        "fondo": "blanco",
+        "ancla": "garantia",
+        "eyebrow": "Sin riesgo",
+        "titulo": "Probalo tranquilo",
+        "texto": "Tu garantía exacta, igual que en la política de devoluciones.",
+        "slot": "Foto: el paquete entregado en la puerta"
+      }
+    },
+    "preguntas": {
+      "type": "tc-bloques",
+      "blocks": {
+        "it_1": {
+          "type": "item",
+          "settings": {
+            "titulo": "¿Cuánto cuesta el envío?",
+            "texto": "Desde [envio_gratis_desde] el envío es gratis. Por debajo de ese monto son [envio_fijo] fijos."
+          }
+        },
+        "it_2": {
+          "type": "item",
+          "settings": {
+            "titulo": "¿Cómo puedo pagar?",
+            "texto": "Con [medios_de_pago]. [cuotas]."
+          }
+        },
+        "it_3": {
+          "type": "item",
+          "settings": {
+            "titulo": "¿En cuánto tiempo se nota?",
+            "texto": "Respuesta honesta: sin plazos garantizados."
+          }
+        },
+        "it_4": {
+          "type": "item",
+          "settings": {
+            "titulo": "¿Tiene contraindicaciones?",
+            "texto": "La leyenda que corresponda a la categoría del producto."
+          }
+        },
+        "it_5": {
+          "type": "item",
+          "settings": {
+            "titulo": "¿Puedo devolverlo?",
+            "texto": "Tu política de devoluciones en una frase."
+          }
+        }
+      },
+      "block_order": [
+        "it_1",
+        "it_2",
+        "it_3",
+        "it_4",
+        "it_5"
+      ],
+      "settings": {
+        "layout": "faq",
+        "acento": "tema",
+        "fondo": "tinte",
+        "ancla": "preguntas",
+        "eyebrow": "Preguntas",
+        "titulo": "Lo que nos preguntan",
+        "texto": "Envío, pago, devoluciones y cómo usarlo."
+      }
+    },
+    "oferta": {
+      "type": "tc-oferta",
+      "settings": {
+        "acento": "tema",
+        "eyebrow": "Tu pack",
+        "titulo": "Cierre del hook del anuncio.",
+        "titulo_it": "La promesa, otra vez.",
+        "unidad": "unidad",
+        "unidades": "unidades",
+        "pack_recomendado": 2,
+        "texto_recomendado": "Recomendado",
+        "mostrar_valor": true,
+        "valor_titulo": "Con el [pack] te llevás"
+      }
+    }
+  },
+  "order": [
+    "compra",
+    "opiniones",
+    "dolor",
+    "porque",
+    "friccion",
+    "solucion",
+    "pasos",
+    "garantia",
+    "preguntas",
+    "oferta"
+  ]
+}

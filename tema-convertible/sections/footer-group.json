@@ -1,0 +1,15 @@
+{
+  "type": "footer",
+  "name": "Pie",
+  "sections": {
+    "pie": {
+      "type": "tc-pie",
+      "blocks": {
+        "c1": { "type": "menu", "settings": { "titulo": "Ayuda", "menu": "footer" } }
+      },
+      "block_order": ["c1"],
+      "settings": { "sobre": "", "logo_blanco": false }
+    }
+  },
+  "order": ["pie"]
+}

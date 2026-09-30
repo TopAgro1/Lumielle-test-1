@@ -1,0 +1,20 @@
+{%- comment -%} Tema Convertible · Marca gigante al pie de la home (el nombre de la tienda en la tipografía de titulares). {%- endcomment -%}
+<section class="tc-bigword" aria-label="{{ section.settings.palabra | default: shop.name | escape }}">
+  <div class="lm-wrap">
+    {%- if section.settings.volanta != blank -%}<div class="tc-bigword__tag">{{ section.settings.volanta }}</div>{%- endif -%}
+    <div class="tc-bigword__word" aria-hidden="true">{{ section.settings.palabra | default: shop.name }}</div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "TC · Marca gigante",
+  "tag": "div",
+  "class": "tc-section",
+  "settings": [
+    { "type": "text", "id": "volanta", "label": "Volanta" },
+    { "type": "text", "id": "palabra", "label": "Palabra (vacío = nombre de la tienda)" }
+  ],
+  "presets": [ { "name": "TC · Marca gigante" } ]
+}
+{% endschema %}

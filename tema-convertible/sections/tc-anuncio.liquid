@@ -1,0 +1,46 @@
+{%- comment -%}
+  Tema Convertible · Barra de anuncios. Lo mejor de la oferta operativa (envío gratis desde, despacho, garantía).
+  Cada mensaje pasa por los filtros del tema: si promete un medio de pago inactivo o envío gratis sin umbral
+  configurado, no se muestra. Podés usar [envio_gratis_desde] y [garantia].
+{%- endcomment -%}
+{%- capture items -%}
+  {%- for block in section.blocks -%}
+    {%- capture txt -%}{% render 'store-tokens', text: block.settings.texto %}{%- endcapture -%}
+    {%- capture ok -%}{% render 'pay-allowed', text: block.settings.texto %}{%- endcapture -%}
+    {%- if txt != blank and ok == 'true' -%}
+      <span {{ block.shopify_attributes }}>{%- if block.settings.link != blank -%}<a href="{{ block.settings.link }}">{{ txt }}</a>{%- else -%}{{ txt }}{%- endif -%}</span><i aria-hidden="true"></i>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+{%- if items != blank -%}
+<div class="tc-announce{% if section.settings.estatica %} tc-announce--static{% endif %}" role="region" aria-label="Anuncios">
+  <div class="tc-announce__row"{% unless section.settings.estatica %} style="animation-duration:{{ section.settings.velocidad }}s"{% endunless %}>
+    {{ items }}
+    <span class="tc-dup" aria-hidden="true">{{ items }}</span>
+  </div>
+</div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "TC · Anuncios",
+  "tag": "div",
+  "class": "tc-section",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "checkbox", "id": "estatica", "label": "Fija (sin desplazarse)", "default": false, "info": "Con uno o dos mensajes conviene fija." },
+    { "type": "range", "id": "velocidad", "label": "Segundos por vuelta", "min": 16, "max": 80, "step": 2, "default": 36 }
+  ],
+  "blocks": [
+    {
+      "type": "mensaje",
+      "name": "Mensaje",
+      "settings": [
+        { "type": "text", "id": "texto", "label": "Texto", "default": "Envío gratis desde [envio_gratis_desde]", "info": "Solo promesas reales. Podés usar [envio_gratis_desde] y [garantia]." },
+        { "type": "url", "id": "link", "label": "Link (opcional)" }
+      ]
+    }
+  ],
+  "presets": [ { "name": "TC · Anuncios" } ]
+}
+{% endschema %}

@@ -1,0 +1,68 @@
+{%- comment -%}
+  Tema Convertible · Pie. Marca, columnas de menú, contacto, legales (botón de arrepentimiento,
+  Data Fiscal) y medios de pago reales del checkout. Datos legales y de contacto: Tema → Configuración.
+{%- endcomment -%}
+{%- assign mail = settings.contact_email | default: shop.email -%}
+<footer class="tc-footer">
+  <div class="lm-wrap">
+    <div class="tc-footer__grid">
+      <div>
+        <div class="tc-footer__brand">
+          {%- if settings.logo != blank and section.settings.logo_blanco -%}
+            {{ settings.logo | image_url: height: 120 | image_tag: alt: shop.name, loading: 'lazy' }}
+          {%- else -%}{{ shop.name }}{%- endif -%}
+        </div>
+        {%- if section.settings.sobre != blank -%}<p class="tc-footer__about">{% render 'store-tokens', text: section.settings.sobre %}</p>{%- endif -%}
+        {% render 'tc-social' %}
+      </div>
+      {%- for block in section.blocks -%}
+        <nav class="tc-footer__col" aria-label="{{ block.settings.titulo | escape }}" {{ block.shopify_attributes }}>
+          <div class="tc-footer__title">{{ block.settings.titulo }}</div>
+          {%- for link in block.settings.menu.links -%}<a href="{{ link.url }}">{{ link.title }}</a>{%- endfor -%}
+        </nav>
+      {%- endfor -%}
+      <div class="tc-footer__col">
+        <div class="tc-footer__title">Atención</div>
+        {%- if settings.whatsapp_url != blank -%}<a href="{{ settings.whatsapp_url }}" target="_blank" rel="noopener">{{ settings.whatsapp_label | default: 'WhatsApp' }}</a>{%- endif -%}
+        {%- if mail != blank -%}<a href="mailto:{{ mail }}">{{ mail }}</a>{%- endif -%}
+        {%- if settings.contact_hours != blank -%}<span>{{ settings.contact_hours }}</span>{%- endif -%}
+        {%- if settings.regret_url != blank -%}<a class="tc-footer__regret" href="{{ settings.regret_url }}">Botón de arrepentimiento</a>{%- endif -%}
+        {%- if settings.data_fiscal_url != blank -%}
+          <a class="tc-footer__fiscal" href="{{ settings.data_fiscal_url }}" target="_blank" rel="noopener" aria-label="Data Fiscal">
+            {%- if settings.data_fiscal_image != blank -%}{{ settings.data_fiscal_image | image_url: width: 160 | image_tag: alt: 'Data Fiscal', loading: 'lazy', width: 66 }}{%- else -%}<span style="font-size:12px;line-height:1.4;color:#1e1a26;padding:4px 6px;display:block">Data Fiscal</span>{%- endif -%}
+          </a>
+        {%- endif -%}
+        {% render 'tc-payment-icons' %}
+      </div>
+    </div>
+    <div class="tc-footer__legal">
+      <span>{% if settings.legal_name != blank %}{{ settings.legal_name }}{% endif %}{% if settings.legal_tax_id != blank %} · {{ settings.legal_tax_id }}{% endif %}{% if settings.legal_address != blank %} · {{ settings.legal_address }}{% endif %}</span>
+      <span>© {{ 'now' | date: '%Y' }} {{ shop.name }}</span>
+    </div>
+    {%- if settings.legal_note != blank -%}<p class="tc-footer__legal" style="border:0;padding-top:0">{{ settings.legal_note }}</p>{%- endif -%}
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "TC · Pie",
+  "tag": "div",
+  "class": "tc-section tc-section--footer",
+  "max_blocks": 3,
+  "settings": [
+    { "type": "paragraph", "content": "Contacto, redes y legales: Tema → Configuración." },
+    { "type": "textarea", "id": "sobre", "label": "Sobre la marca", "info": "Una o dos frases. Podés usar [envio_gratis_desde]." },
+    { "type": "checkbox", "id": "logo_blanco", "label": "Mostrar el logo en blanco (si no, el nombre)", "default": false }
+  ],
+  "blocks": [
+    {
+      "type": "menu",
+      "name": "Columna de menú",
+      "settings": [
+        { "type": "text", "id": "titulo", "label": "Título", "default": "Ayuda" },
+        { "type": "link_list", "id": "menu", "label": "Menú", "default": "footer" }
+      ]
+    }
+  ]
+}
+{% endschema %}

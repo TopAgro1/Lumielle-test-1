@@ -1,0 +1,240 @@
+{%- comment -%}
+  Tema Convertible · Opiniones. Solo prueba real: calificación de otra tienda con su fuente, fecha y link,
+  reseñas propias de pedidos confirmados y videos de usuarios con su origen y permiso.
+  Cada tipo tiene su estado para cuando no hay datos: nunca se inventan puntajes ni reseñas.
+  Los puntajes propios solo se ven con Tema → Garantía y prueba social → "Mostrar puntajes…" activado.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign own_count = 0
+  assign ext_count = 0
+  assign vid_count = 0
+  assign pic_count = 0
+  for b in section.blocks
+    case b.type
+      when 'review'
+        if b.settings.origen == 'propia'
+          assign own_count = own_count | plus: 1
+        else
+          assign ext_count = ext_count | plus: 1
+        endif
+        if b.settings.foto_1 != blank or b.settings.foto_2 != blank or b.settings.foto_3 != blank
+          assign pic_count = pic_count | plus: 1
+        endif
+      when 'video'
+        assign vid_count = vid_count | plus: 1
+    endcase
+  endfor
+  assign dist_total = s.dist_5 | plus: s.dist_4 | plus: s.dist_3 | plus: s.dist_2 | plus: s.dist_1
+  assign fuente = s.fuente_nombre | strip
+  assign show_ext_score = false
+  if s.fuente_mostrar and fuente != blank and s.fuente_promedio > 0
+    assign show_ext_score = true
+  endif
+  assign own_score = false
+  if settings.reviews_real and s.propias_cantidad >= 10 and s.propias_promedio > 0
+    assign own_score = true
+  endif
+  assign invite_url = s.invita_url | default: settings.whatsapp_url
+-%}
+<div class="lm tc" style="{% render 'tc-accent', preset: s.acento %}">
+<section class="lm-sec{% if s.tinte %} lm-sec--tint{% endif %}" id="{{ s.ancla | default: 'opiniones' | handleize }}">
+<div class="lm-wrap">
+  <div class="lm-head lm-reveal">
+    {%- if s.eyebrow != blank -%}<span class="lm-eyebrow">{{ s.eyebrow }}</span>{%- endif -%}
+    <h2 class="lm-h2">{{ s.titulo }}</h2>
+    {%- if s.texto != blank -%}<p class="lm-lead">{{ s.texto }}</p>{%- endif -%}
+  </div>
+
+  {%- if vid_count > 0 -%}
+  <div class="lm-reveal" style="display:flex;flex-direction:column;gap:14px;margin-bottom:40px">
+    {%- if s.videos_titulo != blank -%}<div class="lm-rev__list-head"><span>{{ s.videos_titulo }}</span></div>{%- endif -%}
+    <div class="lm-snap tc-vids" data-tc-vids data-auto="{{ s.videos_auto }}" data-speed="{{ s.videos_velocidad }}">
+      {%- for b in section.blocks -%}{%- if b.type == 'video' -%}
+        <figure class="tc-vid" {{ b.shopify_attributes }}>
+          {%- if b.settings.video != blank -%}
+            <div class="tc-vid__media">
+              {{ b.settings.video | video_tag: autoplay: true, loop: true, muted: true, playsinline: true, preload: 'metadata', image_size: '600x', controls: false }}
+              <button type="button" class="tc-vid__snd" data-snd aria-label="Activar sonido" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path class="tc-snd-off" d="m22 9-6 6M16 9l6 6"/><path class="tc-snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></button>
+            </div>
+          {%- else -%}
+            <span class="tc-vid__ph">{% render 'tc-img', slot: 'Video de usuario (9:16)' %}</span>
+          {%- endif -%}
+          {%- if b.settings.texto != blank -%}<p>“{{ b.settings.texto }}”</p>{%- endif -%}
+          {%- if b.settings.nombre != blank -%}<b>{{ b.settings.nombre }}{% if b.settings.red != blank %} · {{ b.settings.red }}{% endif %}</b>{%- endif -%}
+        </figure>
+      {%- endif -%}{%- endfor -%}
+    </div>
+    {%- if s.videos_nota != blank -%}<p class="lm-small">{{ s.videos_nota }}</p>{%- endif -%}
+  </div>
+  {%- endif -%}
+
+  <div class="lm-rev__grid">
+    <div class="lm-rev lm-reveal">
+      {%- if show_ext_score -%}
+      <div class="lm-score lm-score--tint">
+        <span class="lm-eyebrow">El mismo producto en {{ fuente }}</span>
+        <div class="lm-score__num"><strong>{{ s.fuente_promedio | replace: '.', ',' }}</strong><div>{% render 'lm-stars', rating: s.fuente_promedio, size: 22 %}{%- if s.fuente_cantidad != blank -%}<span>{{ s.fuente_cantidad }} reseñas</span>{%- endif -%}</div></div>
+        {%- if dist_total > 0 -%}
+        <div class="lm-dist">
+          {%- for k in (1..5) reversed -%}
+            {%- assign dk = 'dist_' | append: k -%}{%- assign dv = s[dk] -%}
+            {%- assign dw = dv | times: 100 | divided_by: dist_total -%}{%- if dw < 1 -%}{%- assign dw = 1 -%}{%- endif -%}
+            <div class="lm-dist__row"><span>{{ k }} ★</span><span class="lm-dist__track"><i style="width:{{ dw }}%"></i></span><span>{{ dv }}</span></div>
+          {%- endfor -%}
+        </div>
+        {%- endif -%}
+        <p class="lm-small">Calificación de compradores de {{ fuente }}{% if s.fuente_fecha != blank %}, consultada en {{ s.fuente_fecha }}{% endif %}.</p>
+        {%- if s.fuente_url != blank -%}<a class="lm-src" href="{{ s.fuente_url }}" target="_blank" rel="noopener">Ver las reseñas en {{ fuente }}{% render 'lm-icon', name: 'external' %}</a>{%- endif -%}
+      </div>
+      {%- endif -%}
+      <div class="lm-score lm-score--line">
+        <span class="lm-eyebrow">En {{ shop.name }}</span>
+        {%- if own_score -%}
+          <div class="lm-score__num"><strong>{{ s.propias_promedio | replace: '.', ',' }}</strong><div>{% render 'lm-stars', rating: s.propias_promedio, size: 22 %}<span>{{ s.propias_cantidad }} reseñas de clientes</span></div></div>
+        {%- else -%}
+          <p class="lm-lead">{{ s.sin_resenas }}</p>
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="lm-rev lm-reveal">
+      {%- if ext_count > 0 -%}
+      <div class="lm-rev__list-head"><span>{% if fuente != blank %}Compradores en {{ fuente }}{% else %}Reseñas de otras tiendas{% endif %}</span>{%- if s.fuente_url != blank -%}<a href="{{ s.fuente_url }}" target="_blank" rel="noopener">Ver originales</a>{%- endif -%}</div>
+      <div class="lm-snap lm-rev__list">
+        {%- for b in section.blocks -%}{%- if b.type == 'review' and b.settings.origen != 'propia' -%}{% render 'lm-review', b: b, fuente: fuente %}{%- endif -%}{%- endfor -%}
+      </div>
+      {%- if s.fuente_nota != blank -%}<p class="lm-small">{{ s.fuente_nota }}</p>{%- endif -%}
+      {%- endif -%}
+      {%- if own_count > 0 -%}
+      <div class="lm-rev__list-head" style="margin-top:12px"><span>Clientes de {{ shop.name }}</span></div>
+      <div class="lm-snap lm-rev__list">
+        {%- for b in section.blocks -%}{%- if b.type == 'review' and b.settings.origen == 'propia' -%}{% render 'lm-review', b: b, own: true %}{%- endif -%}{%- endfor -%}
+      </div>
+      {%- else -%}
+      <div class="lm-invite">
+        <strong>{{ s.invita_titulo }}</strong>
+        <span class="lm-lead">{{ s.invita_texto }}</span>
+        {%- if s.formulario -%}
+          {%- form 'contact', id: 'tc-review-form' -%}
+            {%- if form.posted_successfully? -%}
+              <p class="tc-ok" role="status">¡Gracias! La recibimos. Verificamos el pedido y la publicamos sin cambiar lo que escribiste.</p>
+            {%- else -%}
+              <details class="tc-rvform"{% if form.errors %} open{% endif %}>
+                <summary class="lm-btn lm-btn--ghost">{{ s.invita_boton }}</summary>
+                <div class="tc-fields">
+                  {%- if form.errors -%}<p class="tc-form-error" role="alert">{{ form.errors | default_errors }}</p>{%- endif -%}
+                  <input type="hidden" name="contact[Tipo]" value="Reseña de producto">
+                  <input type="hidden" name="contact[Producto]" value="{{ product.title | default: page.title | escape }}">
+                  <fieldset class="tc-stars-input">
+                    <legend>Tu puntuación</legend>
+                    {%- for i in (1..5) reversed -%}
+                      <input type="radio" id="tc-rv-{{ section.id }}-{{ i }}" name="contact[Puntuacion]" value="{{ i }} de 5" {% if i == 5 %}checked{% endif %}>
+                      <label for="tc-rv-{{ section.id }}-{{ i }}" title="{{ i }} de 5">★<span class="tc-sr">{{ i }} de 5</span></label>
+                    {%- endfor -%}
+                  </fieldset>
+                  <label>Nombre <small>(publicamos el nombre y la inicial del apellido)</small><input type="text" name="contact[name]" autocomplete="name" required></label>
+                  <label>Email <small>(no se publica)</small><input type="email" name="contact[email]" autocomplete="email" required></label>
+                  <label>Número de pedido<input type="text" name="contact[Numero de pedido]" required></label>
+                  <label>Tu experiencia<textarea name="contact[body]" rows="4" maxlength="1000" required></textarea></label>
+                  <button type="submit" class="lm-btn">Enviar reseña</button>
+                </div>
+              </details>
+            {%- endif -%}
+          {%- endform -%}
+        {%- elsif invite_url != blank -%}
+          <a class="lm-src" href="{{ invite_url }}" target="_blank" rel="noopener">{{ s.invita_boton }}{% render 'lm-icon', name: 'arrow' %}</a>
+        {%- endif -%}
+      </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+</section>
+
+{%- if pic_count > 0 -%}
+<dialog class="tc-lb" data-tc-lb aria-label="Foto de la reseña">
+  <img class="tc-lb__img" alt="" width="1200" height="1200">
+  <button type="button" class="tc-lb__btn tc-lb__close" data-lb-close aria-label="Cerrar">{% render 'lm-icon', name: 'close' %}</button>
+  <button type="button" class="tc-lb__btn tc-lb__prev" data-lb-prev aria-label="Foto anterior">{% render 'lm-icon', name: 'left' %}</button>
+  <button type="button" class="tc-lb__btn tc-lb__next" data-lb-next aria-label="Foto siguiente">{% render 'lm-icon', name: 'right' %}</button>
+  <span class="tc-lb__count" data-lb-count></span>
+</dialog>
+{%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "TC · Opiniones",
+  "tag": "div",
+  "class": "tc-section",
+  "max_blocks": 24,
+  "settings": [
+    { "type": "select", "id": "acento", "label": "Color de acento", "default": "tema", "options": [
+      { "value": "tema", "label": "El del tema" }, { "value": "ciruela", "label": "Ciruela" }, { "value": "violeta", "label": "Violeta" }, { "value": "salvia", "label": "Salvia" },
+      { "value": "oceano", "label": "Océano" }, { "value": "terracota", "label": "Terracota" }, { "value": "grafito", "label": "Grafito" }
+    ] },
+    { "type": "checkbox", "id": "tinte", "label": "Fondo tinte", "default": false },
+    { "type": "text", "id": "ancla", "label": "Ancla", "default": "opiniones" },
+    { "type": "text", "id": "eyebrow", "label": "Volanta", "default": "Opiniones" },
+    { "type": "text", "id": "titulo", "label": "Título", "default": "Lo que dicen de este producto" },
+    { "type": "text", "id": "texto", "label": "Bajada", "default": "Solo mostramos opiniones reales, siempre con su fuente." },
+    { "type": "header", "content": "Videos de usuarios" },
+    { "type": "text", "id": "videos_titulo", "label": "Título de los videos" },
+    { "type": "text", "id": "videos_nota", "label": "Nota de origen de los videos", "info": "Ej.: Videos publicados en redes por usuarios del producto, con su permiso." },
+    { "type": "checkbox", "id": "videos_auto", "label": "Carrusel que se desliza solo", "default": true, "info": "Sin sonido y en bucle; se frena al tocar. Con \"reducir movimiento\" activado en el teléfono, queda quieto." },
+    { "type": "range", "id": "videos_velocidad", "label": "Velocidad del carrusel", "min": 10, "max": 60, "step": 2, "unit": "px", "default": 28 },
+    { "type": "header", "content": "Calificación de otra tienda (el mismo producto)" },
+    { "type": "checkbox", "id": "fuente_mostrar", "label": "Mostrar", "default": false },
+    { "type": "text", "id": "fuente_nombre", "label": "Nombre de la fuente", "info": "Obligatorio para mostrar el puntaje: se imprime junto al número." },
+    { "type": "range", "id": "fuente_promedio", "label": "Promedio", "min": 0, "max": 5, "step": 0.1, "default": 0, "info": "Tiene que coincidir con la distribución de abajo." },
+    { "type": "text", "id": "fuente_cantidad", "label": "Cantidad de reseñas" },
+    { "type": "number", "id": "dist_5", "label": "5 estrellas", "default": 0 },
+    { "type": "number", "id": "dist_4", "label": "4 estrellas", "default": 0 },
+    { "type": "number", "id": "dist_3", "label": "3 estrellas", "default": 0 },
+    { "type": "number", "id": "dist_2", "label": "2 estrellas", "default": 0 },
+    { "type": "number", "id": "dist_1", "label": "1 estrella", "default": 0 },
+    { "type": "text", "id": "fuente_fecha", "label": "Fecha de consulta", "info": "Ej.: septiembre de 2026." },
+    { "type": "url", "id": "fuente_url", "label": "Link a las reseñas originales" },
+    { "type": "text", "id": "fuente_nota", "label": "Nota bajo las reseñas externas", "info": "Ej.: Fragmentos traducidos; […] marca texto omitido." },
+    { "type": "header", "content": "Reseñas propias" },
+    { "type": "number", "id": "propias_cantidad", "label": "Cantidad (de tu app de reseñas)", "default": 0 },
+    { "type": "range", "id": "propias_promedio", "label": "Promedio", "min": 0, "max": 5, "step": 0.1, "default": 0 },
+    { "type": "text", "id": "sin_resenas", "label": "Texto sin reseñas", "default": "Todavía no hay reseñas de este producto en la tienda. Las primeras, de pedidos reales, van a aparecer acá." },
+    { "type": "text", "id": "invita_titulo", "label": "Invitación: título", "default": "¿Ya lo probaste?" },
+    { "type": "text", "id": "invita_texto", "label": "Invitación: texto", "default": "Contanos cómo te fue. Te pedimos el número de pedido para publicar solo reseñas de compras reales." },
+    { "type": "text", "id": "invita_boton", "label": "Invitación: botón", "default": "Dejar mi opinión" },
+    { "type": "checkbox", "id": "formulario", "label": "Recibir reseñas con un formulario", "default": true, "info": "Llegan por mail (formulario de contacto de Shopify). Verificás el pedido y la publicás como bloque \"Reseña\" de origen propio." },
+    { "type": "url", "id": "invita_url", "label": "Invitación: link (si no usás el formulario)", "info": "Vacío = el WhatsApp de la configuración." }
+  ],
+  "blocks": [
+    {
+      "type": "review", "name": "Reseña",
+      "settings": [
+        { "type": "select", "id": "origen", "label": "Origen", "default": "externa", "options": [ { "value": "externa", "label": "Otra tienda (la fuente de arriba)" }, { "value": "propia", "label": "Cliente de la tienda (pedido confirmado)" } ] },
+        { "type": "text", "id": "nombre", "label": "Nombre" },
+        { "type": "text", "id": "pais", "label": "País o ciudad" },
+        { "type": "text", "id": "fecha", "label": "Fecha" },
+        { "type": "range", "id": "estrellas", "label": "Estrellas", "min": 1, "max": 5, "step": 1, "default": 5 },
+        { "type": "text", "id": "titulo", "label": "Título" },
+        { "type": "textarea", "id": "texto", "label": "Texto", "info": "Sin cambiar el sentido. Si recortás, marcá […]." },
+        { "type": "header", "content": "Fotos de quien compró" },
+        { "type": "paragraph", "content": "Opcional. Solo fotos reales que mandó la persona, con su permiso." },
+        { "type": "image_picker", "id": "foto_1", "label": "Foto 1" },
+        { "type": "image_picker", "id": "foto_2", "label": "Foto 2" },
+        { "type": "image_picker", "id": "foto_3", "label": "Foto 3" }
+      ]
+    },
+    {
+      "type": "video", "name": "Video de usuario",
+      "settings": [
+        { "type": "video", "id": "video", "label": "Video (vertical 9:16)" },
+        { "type": "text", "id": "texto", "label": "Lo que dice" },
+        { "type": "text", "id": "nombre", "label": "Nombre o usuario" },
+        { "type": "text", "id": "red", "label": "Red", "info": "Ej.: TikTok, Instagram." }
+      ]
+    }
+  ],
+  "presets": [ { "name": "TC · Opiniones" } ]
+}
+{% endschema %}

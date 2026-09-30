@@ -1,0 +1,35 @@
+{%- comment -%}
+  Devuelve "true" si un texto corto no promete un medio de pago que hoy no está activo
+  en Tema → Medios de pago; si no, "false". Lo usan la barra de anuncios y las listas de beneficios.
+  Uso: {%- capture ok -%}{% render 'pay-allowed', text: item %}{%- endcapture -%}{% if ok == 'true' %}…
+{%- endcomment -%}
+{%- liquid
+  assign low = text | downcase
+  assign ok = true
+  unless settings.pay_cod
+    if low contains 'recibir' or low contains 'efectivo' or low contains 'contra entrega' or low contains 'contraentrega'
+      assign ok = false
+    endif
+  endunless
+  unless settings.pay_transfer
+    if low contains 'transferencia'
+      assign ok = false
+    endif
+  endunless
+  unless settings.pay_installments_free
+    if low contains 'sin inter'
+      assign ok = false
+    endif
+  endunless
+  unless settings.pay_mp
+    if low contains 'mercado pago'
+      assign ok = false
+    endif
+  endunless
+  if settings.free_shipping_threshold == 0
+    if low contains 'envío gratis' or low contains 'envio gratis'
+      assign ok = false
+    endif
+  endif
+-%}
+{{- ok -}}

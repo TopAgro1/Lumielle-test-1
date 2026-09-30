@@ -1,0 +1,55 @@
+{%- comment -%}
+  Tarjeta de producto para colección, búsqueda y listas. Precio real de Shopify y ahorro real
+  del pack x2 (si existe una variante con "x2" en el nombre). Un solo destino: la página del producto.
+  Uso: {% render 'tc-product-card', product: product, hook: '', volanta: '', eager: false %}
+{%- endcomment -%}
+{%- liquid
+  assign v1 = product.selected_or_first_available_variant
+  assign pack = nil
+  for v in product.variants
+    if v.title contains 'x2'
+      assign pack = v
+      break
+    endif
+  endfor
+  assign base = product.variants.first
+  assign pack_save = 0
+  if pack and base.price > 0
+    assign pack_save = base.price | times: 2 | minus: pack.price
+  endif
+  assign tag = ''
+  for t in product.tags
+    assign low = t | downcase
+    if low contains 'destacado' or low contains 'nuevo' or low contains 'lanzamiento'
+      assign tag = t
+      break
+    endif
+  endfor
+-%}
+<article class="tc-pcard">
+  <a class="tc-pcard__media" href="{{ product.url }}" tabindex="-1" aria-hidden="true">
+    {%- if product.featured_image -%}
+      {%- if eager -%}
+        {{ product.featured_image | image_url: width: 900 | image_tag: loading: 'eager', alt: '', sizes: '(min-width: 990px) 30vw, 50vw', widths: '300, 500, 700, 900' }}
+      {%- else -%}
+        {{ product.featured_image | image_url: width: 900 | image_tag: loading: 'lazy', alt: '', sizes: '(min-width: 990px) 30vw, 50vw', widths: '300, 500, 700, 900' }}
+      {%- endif -%}
+    {%- else -%}
+      {% render 'tc-img', slot: 'Foto del producto de frente', alt: '' %}
+    {%- endif -%}
+    {%- if tag != blank -%}<span class="lm-pill tc-pcard__tag">{{ tag }}</span>{%- endif -%}
+    {%- unless product.available -%}<span class="lm-pill tc-pcard__tag tc-pcard__tag--out">Sin stock</span>{%- endunless -%}
+  </a>
+  <div class="tc-pcard__body">
+    {%- if volanta != blank -%}<span class="lm-eyebrow">{{ volanta }}</span>{%- elsif product.type != blank -%}<span class="lm-eyebrow">{{ product.type }}</span>{%- endif -%}
+    <h3 class="tc-pcard__title"><a href="{{ product.url }}">{{ product.title }}</a></h3>
+    {%- if hook != blank -%}<p class="tc-pcard__hook">{{ hook }}</p>{%- endif -%}
+    <div class="tc-pcard__price">
+      {%- if product.price > 0 -%}
+        {%- if product.price_varies -%}Desde {% endif -%}{{ product.price_min | money }}
+        {%- if v1.compare_at_price > v1.price and product.price_varies == false -%}<s>{{ v1.compare_at_price | money }}</s>{%- endif -%}
+      {%- else -%}Muy pronto{%- endif -%}
+    </div>
+    {%- if pack_save > 0 -%}<span class="tc-pcard__save">Pack x2: ahorrás {{ pack_save | money_without_trailing_zeros }}</span>{%- endif -%}
+  </div>
+</article>

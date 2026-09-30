@@ -1,0 +1,26 @@
+{% layout none %}
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tarjeta de regalo · {{ shop.name }}</title>
+    {% render 'tc-vars' %}
+    {{ 'tc-base.css' | asset_url | stylesheet_tag }}
+    {{ 'tc.css' | asset_url | stylesheet_tag }}
+    {{ content_for_header }}
+  </head>
+  <body class="lm tc">
+    <main class="lm-sec">
+      <div class="lm-wrap tc-page" style="margin:0 auto;text-align:center">
+        <div class="lm-head" style="align-items:center">
+          <span class="lm-eyebrow">{{ shop.name }}</span>
+          <h1 class="lm-h2">Tu tarjeta de regalo</h1>
+          <p class="lm-lead">Saldo: <b>{{ gift_card.balance | money }}</b>{% if gift_card.expires_on %} · Vence el {{ gift_card.expires_on | date: '%d/%m/%Y' }}{% endif %}</p>
+          <p style="font-size:24px;font-weight:700;letter-spacing:.08em">{{ gift_card.code | format_code }}</p>
+          <a class="lm-btn lm-btn--auto" href="{{ shop.url }}">Ir a la tienda</a>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

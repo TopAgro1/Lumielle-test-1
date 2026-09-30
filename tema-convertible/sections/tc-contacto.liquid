@@ -1,0 +1,37 @@
+{%- comment -%} Tema Convertible · Contacto: texto de la página + formulario de Shopify + WhatsApp y horario de la configuración. {%- endcomment -%}
+<div class="lm tc">
+<section class="lm-sec" style="padding-top:32px">
+<div class="lm-wrap tc-page">
+  <div class="lm-head">
+    <h1 class="lm-h2">{{ page.title | default: 'Contacto' }}</h1>
+    {%- if page.content != blank -%}<div class="tc-rte">{{ page.content }}</div>{%- endif -%}
+    {%- if settings.whatsapp_url != blank -%}<a class="lm-btn lm-btn--ghost lm-btn--auto" href="{{ settings.whatsapp_url }}" target="_blank" rel="noopener">{% render 'lm-icon', name: 'chat' %}{{ settings.whatsapp_label | default: 'Escribinos por WhatsApp' }}</a>{%- endif -%}
+    {%- if settings.contact_hours != blank -%}<p class="lm-small">{{ settings.contact_hours }}</p>{%- endif -%}
+  </div>
+  {%- form 'contact', id: 'tc-contact-form' -%}
+    {%- if form.posted_successfully? -%}
+      <p class="tc-ok" role="status">¡Gracias! Te respondemos a la brevedad.</p>
+    {%- else -%}
+      <div class="tc-fields">
+        {%- if form.errors -%}<p class="tc-form-error" role="alert">{{ form.errors | default_errors }}</p>{%- endif -%}
+        <label>Nombre<input type="text" name="contact[name]" autocomplete="name" value="{{ form.name }}" required></label>
+        <label>Email<input type="email" name="contact[email]" autocomplete="email" value="{{ form.email }}" required></label>
+        <label>Teléfono <small>(opcional)</small><input type="tel" name="contact[phone]" autocomplete="tel" value="{{ form.phone }}"></label>
+        <label>Número de pedido <small>(si ya compraste)</small><input type="text" name="contact[Pedido]"></label>
+        <label>Mensaje<textarea name="contact[body]" rows="5" required>{{ form.body }}</textarea></label>
+        <button type="submit" class="lm-btn">Enviar</button>
+      </div>
+    {%- endif -%}
+  {%- endform -%}
+</div>
+</section>
+</div>
+
+{% schema %}
+{
+  "name": "TC · Contacto",
+  "tag": "div",
+  "class": "tc-section",
+  "settings": []
+}
+{% endschema %}

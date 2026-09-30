@@ -1,0 +1,11 @@
+{%- comment -%}
+  Íconos de los medios de pago que Shopify tiene activos en el checkout (los mismos del checkout),
+  más Mercado Pago si está tildado en Tema → Medios de pago y Shopify no lo trae.
+{%- endcomment -%}
+{%- assign types = shop.enabled_payment_types -%}
+{%- if types.size > 0 or settings.pay_mp -%}
+<ul class="tc-payicons" aria-label="Medios de pago">
+  {%- for t in types -%}<li>{{ t | payment_type_svg_tag }}</li>{%- endfor -%}
+  {%- if settings.pay_mp -%}{%- unless types contains 'mercado_pago' -%}<li class="tc-payicons__txt">Mercado Pago</li>{%- endunless -%}{%- endif -%}
+</ul>
+{%- endif -%}

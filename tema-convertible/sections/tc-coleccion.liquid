@@ -1,0 +1,44 @@
+{%- comment -%} Tema Convertible · Colección: título, descripción y grilla de productos con precio real y ahorro del pack x2. {%- endcomment -%}
+{%- assign s = section.settings -%}
+<div class="lm tc">
+<section class="lm-sec" style="padding-top:32px">
+<div class="lm-wrap">
+  <div class="lm-head">
+    {%- if s.eyebrow != blank -%}<span class="lm-eyebrow">{{ s.eyebrow }}</span>{%- endif -%}
+    <h1 class="lm-h2">{{ collection.title }}</h1>
+    {%- if collection.description != blank -%}<div class="lm-lead tc-rte" style="max-width:640px">{{ collection.description }}</div>{%- endif -%}
+  </div>
+  {%- paginate collection.products by s.por_pagina -%}
+    <div class="tc-grid{% if s.columnas == 4 %} tc-grid--4{% endif %}">
+      {%- for product in collection.products -%}
+        {% render 'tc-product-card', product: product, eager: forloop.first %}
+      {%- else -%}
+        <p class="lm-lead">Todavía no hay productos en esta colección.</p>
+      {%- endfor -%}
+    </div>
+    {%- if paginate.pages > 1 -%}
+      <nav class="tc-pager" aria-label="Páginas">
+        {%- if paginate.previous -%}<a href="{{ paginate.previous.url }}" aria-label="Página anterior">{% render 'lm-icon', name: 'left' %}</a>{%- endif -%}
+        {%- for part in paginate.parts -%}
+          {%- if part.is_link -%}<a href="{{ part.url }}">{{ part.title }}</a>{%- elsif part.title == paginate.current_page -%}<span class="is-on" aria-current="page">{{ part.title }}</span>{%- else -%}<span>{{ part.title }}</span>{%- endif -%}
+        {%- endfor -%}
+        {%- if paginate.next -%}<a href="{{ paginate.next.url }}" aria-label="Página siguiente">{% render 'lm-icon', name: 'right' %}</a>{%- endif -%}
+      </nav>
+    {%- endif -%}
+  {%- endpaginate -%}
+</div>
+</section>
+</div>
+
+{% schema %}
+{
+  "name": "TC · Colección",
+  "tag": "div",
+  "class": "tc-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Volanta" },
+    { "type": "range", "id": "por_pagina", "label": "Productos por página", "min": 6, "max": 36, "step": 3, "default": 24 },
+    { "type": "range", "id": "columnas", "label": "Columnas en escritorio", "min": 3, "max": 4, "step": 1, "default": 3 }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,20 @@
+{
+  "type": "header",
+  "name": "Encabezado",
+  "sections": {
+    "anuncio": {
+      "type": "tc-anuncio",
+      "blocks": {
+        "m1": { "type": "mensaje", "settings": { "texto": "Envío gratis desde [envio_gratis_desde]" } },
+        "m2": { "type": "mensaje", "settings": { "texto": "[garantia]" } }
+      },
+      "block_order": ["m1", "m2"],
+      "settings": { "estatica": true, "velocidad": 36 }
+    },
+    "encabezado": {
+      "type": "tc-encabezado",
+      "settings": { "menu": "main-menu", "mostrar_buscar": false, "mostrar_wa": true, "wa_texto": "WhatsApp" }
+    }
+  },
+  "order": ["anuncio", "encabezado"]
+}

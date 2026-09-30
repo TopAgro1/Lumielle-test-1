@@ -1,0 +1,17 @@
+{
+  "name": "tema-convertible-herramientas",
+  "private": true,
+  "description": "Validación, prueba y vista previa local del Tema Convertible (no se sube a Shopify).",
+  "scripts": {
+    "validar": "node validar.js",
+    "probar": "node probar-js.js",
+    "vista": "node previsualizar.js && node capturas.js",
+    "zip": "sh empaquetar.sh"
+  },
+  "devDependencies": {
+    "@shopify/theme-check-node": "3.30.0",
+    "jsdom": "^24.1.3",
+    "liquidjs": "^10.29.0",
+    "playwright": "^1.63.0"
+  }
+}

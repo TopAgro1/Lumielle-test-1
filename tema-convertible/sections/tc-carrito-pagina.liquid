@@ -1,0 +1,18 @@
+{%- comment -%} Tema Convertible · Página del carrito (/cart): el mismo contenido que el carrito lateral. {%- endcomment -%}
+<div class="lm tc tc-cart-page" data-tc-cart-page>
+<section class="lm-sec" style="padding-top:32px">
+<div class="lm-wrap" style="max-width:760px">
+  <div class="lm-head"><h1 class="lm-h2">Tu carrito</h1></div>
+  {% render 'tc-cart-items' %}
+</div>
+</section>
+</div>
+
+{% schema %}
+{
+  "name": "TC · Carrito (página)",
+  "tag": "div",
+  "class": "tc-section",
+  "settings": []
+}
+{% endschema %}

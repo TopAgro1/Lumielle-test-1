@@ -1,0 +1,22 @@
+{
+  "current": "Default",
+  "presets": {
+    "Default": {
+      "accent_preset": "ciruela",
+      "font_display": "dm_serif",
+      "font_body": "figtree",
+      "logo_height": 30,
+      "free_shipping_threshold": 0,
+      "ship_flat_rate": 0,
+      "tz_offset": -3,
+      "corte_despacho": 14,
+      "pay_card": true,
+      "pay_mp": false,
+      "transfer_pct": 10,
+      "installments_max": 3,
+      "reviews_real": false,
+      "whatsapp_label": "Escribinos por WhatsApp",
+      "regret_url": "/pages/arrepentimiento"
+    }
+  }
+}

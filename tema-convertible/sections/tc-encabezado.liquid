@@ -1,0 +1,61 @@
+{%- comment -%}
+  Tema Convertible · Encabezado. BrandSlot (logo o nombre de la tienda), menú, WhatsApp y carrito.
+  En celular: menú a la izquierda, marca al centro, carrito a la derecha. Fijo arriba al hacer scroll.
+{%- endcomment -%}
+{%- assign menu = section.settings.menu -%}
+<header class="tc-header" data-tc-header>
+  <div class="tc-header__in">
+    <details class="tc-menu" data-tc-menu>
+      <summary class="tc-iconbtn" aria-label="Abrir menú">{% render 'lm-icon', name: 'menu' %}</summary>
+      <nav class="tc-menu__panel" aria-label="Menú">
+        {%- for link in menu.links -%}
+          <a href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.title }}</a>
+          {%- for child in link.links -%}<a class="tc-menu__sub" href="{{ child.url }}">{{ child.title }}</a>{%- endfor -%}
+        {%- endfor -%}
+        {%- if settings.whatsapp_url != blank -%}
+          <a class="lm-btn lm-btn--ghost" href="{{ settings.whatsapp_url }}" target="_blank" rel="noopener">{% render 'lm-icon', name: 'chat' %}{{ settings.whatsapp_label | default: 'WhatsApp' }}</a>
+        {%- endif -%}
+      </nav>
+    </details>
+    <nav class="tc-header__nav" aria-label="Principal">
+      {%- for link in menu.links limit: 5 -%}
+        <a href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.title }}</a>
+      {%- endfor -%}
+    </nav>
+    <a class="tc-brand" href="{{ routes.root_url }}">
+      {%- if settings.logo != blank -%}
+        {%- assign logo_w = settings.logo_height | times: settings.logo.aspect_ratio | round -%}
+        {{ settings.logo | image_url: height: 120 | image_tag: alt: shop.name, loading: 'eager', width: logo_w, height: settings.logo_height }}
+      {%- else -%}
+        <span class="tc-brand__name">{{ shop.name }}</span><span class="tc-brand__dot" aria-hidden="true"></span>
+      {%- endif -%}
+    </a>
+    <div class="tc-header__right">
+      {%- if settings.whatsapp_url != blank and section.settings.mostrar_wa -%}
+        <a class="tc-header__wa" href="{{ settings.whatsapp_url }}" target="_blank" rel="noopener">{% render 'lm-icon', name: 'chat' %}{{ section.settings.wa_texto | default: 'WhatsApp' }}</a>
+      {%- endif -%}
+      {%- if section.settings.mostrar_buscar -%}
+        <a class="tc-iconbtn" href="{{ routes.search_url }}" aria-label="Buscar">{% render 'lm-icon', name: 'search' %}</a>
+      {%- endif -%}
+      <a class="tc-iconbtn" href="{{ routes.cart_url }}" data-tc-cart-open aria-label="Abrir carrito">
+        {% render 'lm-icon', name: 'bag' %}
+        <span class="tc-count" data-tc-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+{% schema %}
+{
+  "name": "TC · Encabezado",
+  "tag": "div",
+  "class": "tc-section tc-section--header",
+  "settings": [
+    { "type": "paragraph", "content": "Logo y color: Tema → Configuración → Marca. WhatsApp: Tema → Configuración → Contacto." },
+    { "type": "link_list", "id": "menu", "label": "Menú", "default": "main-menu" },
+    { "type": "checkbox", "id": "mostrar_buscar", "label": "Mostrar búsqueda", "default": false },
+    { "type": "checkbox", "id": "mostrar_wa", "label": "Mostrar WhatsApp en escritorio", "default": true },
+    { "type": "text", "id": "wa_texto", "label": "Texto del WhatsApp", "default": "WhatsApp" }
+  ]
+}
+{% endschema %}

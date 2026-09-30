@@ -1,0 +1,23 @@
+{%- comment -%} Tema Convertible · Artículo del blog. {%- endcomment -%}
+<div class="lm tc">
+<article class="lm-sec" style="padding-top:32px">
+<div class="lm-wrap tc-page" style="margin:0 auto">
+  <div class="lm-head">
+    <span class="lm-small">{{ article.published_at | date: '%d/%m/%Y' }}{% if article.author != blank %} · {{ article.author }}{% endif %}</span>
+    <h1 class="lm-h2">{{ article.title }}</h1>
+  </div>
+  {%- if article.image -%}<div class="lm-photo" style="aspect-ratio:16/9;margin-bottom:28px">{{ article.image | image_url: width: 1400 | image_tag: loading: 'eager', alt: article.image.alt, sizes: '(min-width: 990px) 760px, 92vw', widths: '500, 800, 1100, 1400' }}</div>{%- endif -%}
+  <div class="tc-rte">{{ article.content }}</div>
+  <p style="margin-top:32px"><a class="lm-src" href="{{ blog.url }}">{% render 'lm-icon', name: 'left' %}Volver a {{ blog.title }}</a></p>
+</div>
+</article>
+</div>
+
+{% schema %}
+{
+  "name": "TC · Artículo",
+  "tag": "div",
+  "class": "tc-section",
+  "settings": []
+}
+{% endschema %}

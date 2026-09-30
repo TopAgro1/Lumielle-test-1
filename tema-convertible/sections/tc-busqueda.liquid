@@ -1,0 +1,42 @@
+{%- comment -%} Tema Convertible · Búsqueda de productos. {%- endcomment -%}
+<div class="lm tc">
+<section class="lm-sec" style="padding-top:32px">
+<div class="lm-wrap">
+  <div class="lm-head">
+    <h1 class="lm-h2">{% if search.performed %}Resultados para “{{ search.terms | escape }}”{% else %}Buscar{% endif %}</h1>
+    <form action="{{ routes.search_url }}" method="get" role="search" class="tc-search">
+      <div class="tc-fields">
+        <label for="tc-q">Qué estás buscando<input id="tc-q" type="search" name="q" value="{{ search.terms | escape }}" autocomplete="off"></label>
+      </div>
+      <input type="hidden" name="type" value="product">
+      <button class="lm-btn" type="submit" style="align-self:flex-end">{% render 'lm-icon', name: 'search' %}Buscar</button>
+    </form>
+  </div>
+  {%- if search.performed -%}
+    {%- paginate search.results by 24 -%}
+      <p class="lm-small" role="status">{{ search.results_count }} {% if search.results_count == 1 %}resultado{% else %}resultados{% endif %}</p>
+      <div class="tc-grid" style="margin-top:20px">
+        {%- for item in search.results -%}
+          {%- if item.object_type == 'product' -%}{% render 'tc-product-card', product: item %}{%- endif -%}
+        {%- endfor -%}
+      </div>
+      {%- if paginate.pages > 1 -%}
+        <nav class="tc-pager" aria-label="Páginas">
+          {%- if paginate.previous -%}<a href="{{ paginate.previous.url }}" aria-label="Página anterior">{% render 'lm-icon', name: 'left' %}</a>{%- endif -%}
+          {%- if paginate.next -%}<a href="{{ paginate.next.url }}" aria-label="Página siguiente">{% render 'lm-icon', name: 'right' %}</a>{%- endif -%}
+        </nav>
+      {%- endif -%}
+    {%- endpaginate -%}
+  {%- endif -%}
+</div>
+</section>
+</div>
+
+{% schema %}
+{
+  "name": "TC · Búsqueda",
+  "tag": "div",
+  "class": "tc-section",
+  "settings": []
+}
+{% endschema %}

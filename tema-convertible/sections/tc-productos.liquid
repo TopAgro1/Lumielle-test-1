@@ -1,0 +1,110 @@
+{%- comment -%}
+  Tema Convertible · Productos (home). Una tarjeta grande por producto con su hook, precio real,
+  ahorro real del pack x2 (contra 2 unidades sueltas) y un solo botón a la página del producto.
+  Sin bloques, muestra los productos de la colección elegida.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<div class="lm tc" style="{% render 'tc-accent', preset: s.acento %}">
+<section class="lm-sec{% if s.tinte %} lm-sec--tint{% endif %}" id="{{ s.ancla | default: 'productos' | handleize }}">
+<div class="lm-wrap">
+  <div class="lm-head lm-reveal">
+    {%- if s.eyebrow != blank -%}<span class="lm-eyebrow">{{ s.eyebrow }}</span>{%- endif -%}
+    <h2 class="lm-h2">{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h2>
+    {%- if s.texto != blank -%}<p class="lm-lead" style="max-width:640px">{% render 'store-tokens', text: s.texto %}</p>{%- endif -%}
+  </div>
+  {%- if section.blocks.size > 0 -%}
+  <div class="tc-cards">
+    {%- for b in section.blocks -%}
+      {%- assign p = b.settings.producto -%}
+      {%- if p != blank -%}
+      {%- liquid
+        assign unit = p.variants.first
+        assign pack = nil
+        for v in p.variants
+          if v.title contains 'x2'
+            assign pack = v
+          endif
+        endfor
+        assign pack_save = 0
+        if pack and unit.price > 0
+          assign pack_save = unit.price | times: 2 | minus: pack.price
+        endif
+      -%}
+      <article class="tc-card lm-reveal" {{ b.shopify_attributes }}>
+        <a class="tc-card__media" href="{{ p.url }}" tabindex="-1" aria-hidden="true">
+          {%- if b.settings.imagen != blank -%}
+            {{ b.settings.imagen | image_url: width: 1000 | image_tag: loading: 'lazy', alt: '', sizes: '(min-width: 990px) 25vw, 92vw', widths: '400, 700, 1000' }}
+          {%- elsif p.featured_image -%}
+            {{ p.featured_image | image_url: width: 1000 | image_tag: loading: 'lazy', alt: '', sizes: '(min-width: 990px) 25vw, 92vw', widths: '400, 700, 1000' }}
+          {%- else -%}
+            {% render 'tc-img', slot: 'Foto del producto de frente', alt: '' %}
+          {%- endif -%}
+          {%- if b.settings.etiqueta != blank -%}<span class="lm-pill tc-card__tag">{{ b.settings.etiqueta }}</span>{%- endif -%}
+        </a>
+        <div class="tc-card__body">
+          {%- if b.settings.volanta != blank -%}<span class="lm-eyebrow">{{ b.settings.volanta }}</span>{%- endif -%}
+          <h3><a href="{{ p.url }}">{{ b.settings.nombre | default: p.title }}</a></h3>
+          {%- if b.settings.hook != blank -%}<p class="tc-card__hook">{{ b.settings.hook }}</p>{%- endif -%}
+          {%- if p.price > 0 -%}
+            <div class="tc-card__price">{% if p.price_varies and pack == nil %}Desde {% endif %}{{ unit.price | money }}{% if pack_save > 0 %}<small>Pack x2: ahorrás {{ pack_save | money }}</small>{% endif %}</div>
+            {%- capture cuotas -%}{% render 'pay-copy', format: 'installments' %}{%- endcapture -%}
+            {%- if cuotas != blank -%}<span class="tc-note">{{ cuotas }}</span>{%- endif -%}
+          {%- else -%}
+            <div class="tc-card__price">Muy pronto</div>
+          {%- endif -%}
+          <a href="{{ p.url }}" class="lm-btn">{{ b.settings.boton | default: 'Ver el producto' }}{% render 'lm-icon', name: 'arrow' %}</a>
+        </div>
+      </article>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+  {%- else -%}
+  <div class="tc-grid">
+    {%- assign lista = s.coleccion | default: collections.all -%}
+    {%- for p in lista.products limit: 6 -%}
+      {% render 'tc-product-card', product: p %}
+    {%- else -%}
+      {%- if request.design_mode -%}<p class="lm-small">Agregá bloques "Producto" o elegí una colección.</p>{%- endif -%}
+    {%- endfor -%}
+  </div>
+  {%- endif -%}
+</div>
+</section>
+</div>
+
+{% schema %}
+{
+  "name": "TC · Productos",
+  "tag": "div",
+  "class": "tc-section",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "select", "id": "acento", "label": "Color de acento", "default": "tema", "options": [
+      { "value": "tema", "label": "El del tema" }, { "value": "ciruela", "label": "Ciruela" }, { "value": "violeta", "label": "Violeta" }, { "value": "salvia", "label": "Salvia" },
+      { "value": "oceano", "label": "Océano" }, { "value": "terracota", "label": "Terracota" }, { "value": "grafito", "label": "Grafito" }
+    ] },
+    { "type": "checkbox", "id": "tinte", "label": "Fondo tinte", "default": true },
+    { "type": "text", "id": "ancla", "label": "Ancla", "default": "productos" },
+    { "type": "text", "id": "eyebrow", "label": "Volanta", "default": "Nuestros productos" },
+    { "type": "text", "id": "titulo", "label": "Título", "default": "Pocos productos," },
+    { "type": "text", "id": "titulo_it", "label": "Título: parte en itálica", "default": "pensados a fondo" },
+    { "type": "textarea", "id": "texto", "label": "Bajada" },
+    { "type": "collection", "id": "coleccion", "label": "Colección (si no agregás bloques)", "info": "Vacío = todos los productos." }
+  ],
+  "blocks": [
+    {
+      "type": "producto", "name": "Producto",
+      "settings": [
+        { "type": "product", "id": "producto", "label": "Producto" },
+        { "type": "text", "id": "nombre", "label": "Nombre corto (vacío = el de Shopify)" },
+        { "type": "text", "id": "volanta", "label": "Volanta" },
+        { "type": "text", "id": "etiqueta", "label": "Etiqueta sobre la foto", "info": "\"Más vendido\" solo si es real." },
+        { "type": "textarea", "id": "hook", "label": "Hook y promesa" },
+        { "type": "image_picker", "id": "imagen", "label": "Foto (vacío = la del producto)" },
+        { "type": "text", "id": "boton", "label": "Texto del botón", "default": "Ver el producto" }
+      ]
+    }
+  ],
+  "presets": [ { "name": "TC · Productos" } ]
+}
+{% endschema %}

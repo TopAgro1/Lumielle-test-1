@@ -1,0 +1,13 @@
+{%- comment -%} Estrellas con relleno parcial. Uso: {% render 'lm-stars', rating: 4.8, size: 18 %} {%- endcomment -%}
+{%- liquid
+  assign s = size | default: 18
+  assign r = rating | default: 0 | times: 1.0
+  assign pct = r | divided_by: 5.0 | times: 100 | round
+  assign w = s | times: 5
+  assign r_label = r | round: 1 | replace: '.', ','
+-%}
+{%- capture star -%}<svg width="{{ s }}" height="{{ s }}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.3L12 17.1l-5.7 3.1 1.2-6.3-4.7-4.4 6.4-.8z"/></svg>{%- endcapture -%}
+<span class="lm-stars" role="img" aria-label="{{ r_label }} de 5 estrellas" style="width: {{ w }}px; height: {{ s }}px">
+  <span class="lm-stars__base">{{ star }}{{ star }}{{ star }}{{ star }}{{ star }}</span>
+  <span class="lm-stars__fill" style="width: {{ pct }}%">{{ star }}{{ star }}{{ star }}{{ star }}{{ star }}</span>
+</span>

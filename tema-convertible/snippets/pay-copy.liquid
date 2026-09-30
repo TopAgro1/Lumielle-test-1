@@ -1,0 +1,50 @@
+{%- comment -%}
+  Textos de medios de pago. Única fuente: Tema → Medios de pago (lo que hoy está activo en el checkout).
+  Uso: {% render 'pay-copy', format: 'micro' %}
+  format: 'micro'        → "Pagá con tarjeta o Mercado Pago" (línea corta de confianza)
+          'sentence'     → "tarjeta de crédito o débito, Mercado Pago o transferencia con 10 % off"
+          'installments' → "3 cuotas sin interés" / "Pagá en cuotas con Mercado Pago" / vacío
+{%- endcomment -%}
+{%- liquid
+  assign methods = ''
+  if settings.pay_card
+    assign methods = methods | append: '|tarjeta de crédito o débito'
+  endif
+  if settings.pay_mp
+    assign methods = methods | append: '|Mercado Pago'
+  endif
+  if settings.pay_mp_credits
+    assign methods = methods | append: '|Cuotas sin Tarjeta de Mercado Pago'
+  endif
+  if settings.pay_transfer
+    if settings.transfer_pct > 0
+      assign tr = 'transferencia bancaria con ' | append: settings.transfer_pct | append: ' % off'
+    else
+      assign tr = 'transferencia bancaria'
+    endif
+    assign methods = methods | append: '|' | append: tr
+  endif
+  if settings.pay_cod
+    assign methods = methods | append: '|efectivo al recibir'
+  endif
+  assign list = methods | remove_first: '|' | split: '|'
+-%}
+{%- case format -%}
+  {%- when 'micro' -%}
+    {%- if settings.pay_cod and settings.pay_card -%}Pagá al recibir o con tarjeta
+    {%- elsif settings.pay_cod -%}Pagás al recibir
+    {%- elsif settings.pay_card and settings.pay_mp -%}Pagá con tarjeta o Mercado Pago
+    {%- elsif settings.pay_mp -%}Pagá con Mercado Pago
+    {%- elsif settings.pay_card -%}Pagá con tarjeta
+    {%- else -%}Pago seguro
+    {%- endif -%}
+  {%- when 'installments' -%}
+    {%- if settings.pay_installments_free -%}{{ settings.installments_max | default: 3 }} cuotas sin interés
+    {%- elsif settings.pay_mp -%}Pagá en cuotas con Mercado Pago
+    {%- endif -%}
+  {%- else -%}
+    {%- if list.size == 0 -%}los medios de pago del checkout
+    {%- else -%}
+      {%- for m in list -%}{%- if forloop.first -%}{{ m }}{%- elsif forloop.last %} o {{ m }}{%- else -%}, {{ m }}{%- endif -%}{%- endfor -%}
+    {%- endif -%}
+{%- endcase -%}

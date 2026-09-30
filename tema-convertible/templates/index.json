@@ -1,0 +1,166 @@
+{
+  "sections": {
+    "portada": {
+      "type": "tc-portada",
+      "blocks": {
+        "pick_1": {
+          "type": "producto",
+          "settings": {
+            "volanta": "",
+            "hook": ""
+          }
+        },
+        "pick_2": {
+          "type": "producto",
+          "settings": {
+            "volanta": "",
+            "hook": ""
+          }
+        }
+      },
+      "block_order": [
+        "pick_1",
+        "pick_2"
+      ],
+      "settings": {
+        "acento": "tema",
+        "eyebrow": "",
+        "titulo": "La promesa de tu marca,",
+        "titulo_it": "en una frase.",
+        "texto": "Contá en una o dos frases qué resolvés y para quién. Sin adjetivos: un beneficio concreto.",
+        "cta_label": "Ver los productos",
+        "cta_url": "#productos",
+        "cta2_label": "",
+        "slot": "Foto horizontal: una persona usando el producto, luz natural",
+        "alt": "",
+        "posicion": "50% 40%"
+      }
+    },
+    "productos": {
+      "type": "tc-productos",
+      "settings": {
+        "acento": "tema",
+        "tinte": true,
+        "ancla": "productos",
+        "eyebrow": "Nuestros productos",
+        "titulo": "Pocos productos,",
+        "titulo_it": "pensados a fondo",
+        "texto": ""
+      }
+    },
+    "comprar": {
+      "type": "tc-bloques",
+      "blocks": {
+        "it_1": {
+          "type": "item",
+          "settings": {
+            "icono": "truck",
+            "titulo": "Envíos a todo el país",
+            "texto": "Envío gratis desde [envio_gratis_desde]. Debajo de ese monto, [envio_fijo] fijos."
+          }
+        },
+        "it_2": {
+          "type": "item",
+          "settings": {
+            "icono": "lock",
+            "titulo": "Pagá como te quede cómodo",
+            "texto": "Con [medios_de_pago]. [cuotas]."
+          }
+        },
+        "it_3": {
+          "type": "item",
+          "settings": {
+            "icono": "return",
+            "titulo": "Garantía",
+            "texto": "Contá acá tu política de cambios y devoluciones, igual que en la página de la política."
+          }
+        },
+        "it_4": {
+          "type": "item",
+          "settings": {
+            "icono": "chat",
+            "titulo": "Te responde una persona",
+            "texto": "Antes y después de comprar, por WhatsApp o mail."
+          }
+        }
+      },
+      "block_order": [
+        "it_1",
+        "it_2",
+        "it_3",
+        "it_4"
+      ],
+      "settings": {
+        "layout": "mecanismo",
+        "acento": "tema",
+        "fondo": "blanco",
+        "eyebrow": "Comprar acá",
+        "titulo": "Comprar lleva",
+        "titulo_it": "menos de dos minutos",
+        "texto": "Sin sorpresas en el checkout: el envío, los medios de pago y la garantía son los mismos que ves acá."
+      }
+    },
+    "preguntas": {
+      "type": "tc-bloques",
+      "blocks": {
+        "it_1": {
+          "type": "item",
+          "settings": {
+            "titulo": "¿Cuánto cuesta el envío?",
+            "texto": "Desde [envio_gratis_desde] el envío es gratis. Por debajo de ese monto son [envio_fijo] fijos."
+          }
+        },
+        "it_2": {
+          "type": "item",
+          "settings": {
+            "titulo": "¿Cómo puedo pagar?",
+            "texto": "Con [medios_de_pago]. [cuotas]."
+          }
+        },
+        "it_3": {
+          "type": "item",
+          "settings": {
+            "titulo": "¿Puedo devolverlo?",
+            "texto": "Contá tu política de devoluciones en una frase y enlazá la página completa."
+          }
+        },
+        "it_4": {
+          "type": "item",
+          "settings": {
+            "titulo": "¿Cuándo me llega?",
+            "texto": "Contá el plazo real de despacho y de entrega del correo que usás."
+          }
+        }
+      },
+      "block_order": [
+        "it_1",
+        "it_2",
+        "it_3",
+        "it_4"
+      ],
+      "settings": {
+        "layout": "faq",
+        "acento": "tema",
+        "fondo": "tinte",
+        "ancla": "preguntas",
+        "eyebrow": "Preguntas",
+        "titulo": "Lo que nos preguntan",
+        "texto": "Envío, pago y devoluciones."
+      }
+    },
+    "marca": {
+      "type": "tc-marca",
+      "settings": {
+        "volanta": "",
+        "palabra": ""
+      }
+    }
+  },
+  "order": [
+    "portada",
+    "productos",
+    "comprar",
+    "preguntas",
+    "marca"
+  ]
+}

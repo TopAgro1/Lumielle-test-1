@@ -1,0 +1,22 @@
+{%- comment -%} Tema Convertible · Página no encontrada. {%- endcomment -%}
+<div class="lm tc">
+<section class="lm-sec">
+<div class="lm-wrap tc-page" style="text-align:center;margin:0 auto">
+  <div class="lm-head" style="align-items:center">
+    <span class="lm-eyebrow">Error 404</span>
+    <h1 class="lm-h2">No encontramos esta página</h1>
+    <p class="lm-lead">Puede que el producto ya no esté disponible o que el link tenga un error.</p>
+    <a class="lm-btn lm-btn--auto" href="{{ routes.all_products_collection_url }}">Ver los productos{% render 'lm-icon', name: 'arrow' %}</a>
+  </div>
+</div>
+</section>
+</div>
+
+{% schema %}
+{
+  "name": "TC · 404",
+  "tag": "div",
+  "class": "tc-section",
+  "settings": []
+}
+{% endschema %}

@@ -1,0 +1,30 @@
+{%- comment -%} Tema Convertible · Página con contraseña (tienda antes del lanzamiento). {%- endcomment -%}
+<div class="lm tc">
+<section class="lm-sec">
+<div class="lm-wrap tc-page" style="margin:0 auto;text-align:center">
+  <div class="lm-head" style="align-items:center">
+    {%- if settings.logo != blank -%}{{ settings.logo | image_url: height: 120 | image_tag: alt: shop.name, style: 'height:var(--tc-logo-h);width:auto' }}{%- else -%}<span class="tc-brand__name">{{ shop.name }}</span>{%- endif -%}
+    <h1 class="lm-h2">{{ section.settings.titulo }}</h1>
+    {%- if shop.password_message != blank -%}<p class="lm-lead">{{ shop.password_message }}</p>{%- endif -%}
+  </div>
+  {%- form 'storefront_password' -%}
+    <div class="tc-fields" style="text-align:left;max-width:420px;margin:0 auto">
+      {%- if form.errors -%}<p class="tc-form-error" role="alert">{{ form.errors | default_errors }}</p>{%- endif -%}
+      <label>Contraseña<input type="password" name="password" autocomplete="current-password" required></label>
+      <button type="submit" class="lm-btn">Entrar</button>
+    </div>
+  {%- endform -%}
+</div>
+</section>
+</div>
+
+{% schema %}
+{
+  "name": "TC · Contraseña",
+  "tag": "div",
+  "class": "tc-section",
+  "settings": [
+    { "type": "text", "id": "titulo", "label": "Título", "default": "Muy pronto" }
+  ]
+}
+{% endschema %}

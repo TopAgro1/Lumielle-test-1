@@ -1,0 +1,6 @@
+{
+  "sections": {
+    "main": { "type": "tc-404", "settings": {} }
+  },
+  "order": ["main"]
+}

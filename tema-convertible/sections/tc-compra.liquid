@@ -1,0 +1,519 @@
+{%- comment -%}
+  Tema Convertible · Compra (portada de producto).
+  Arriba del pliegue en 390 px: foto, prueba real (si hay), titular = frase del anuncio, promesa, precio y botón
+  (en la barra fija desde el primer segundo en celular).
+  Variantes: modo automático. Si todas se llaman "Pack x1 / x2 / x3" (o "Caja x6"…), se muestran como packs con
+  ahorro calculado contra la unidad; si no (talle, color, sabor…), como opciones con su precio.
+  Envío, pagos, garantía y despacho salen de Tema → Configuración. Una sola sección de compra por página:
+  la oferta final (tc-oferta) se engancha a este formulario.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign porciones = s.porciones | default: 0
+  assign form_id = 'tc-form-' | append: section.id
+  assign threshold_cents = settings.free_shipping_threshold | times: 100
+  assign rec = s.pack_recomendado | default: 2
+  assign unidad = s.unidad | default: 'unidad'
+  assign unidades = s.unidades | default: 'unidades'
+  assign por_label = s.porcion_label | default: 'porciones'
+  assign tr_pct = 0
+  if settings.pay_transfer and settings.transfer_pct > 0
+    assign tr_pct = settings.transfer_pct
+  endif
+
+  comment
+    Modo de variantes: packs (Pack xN) u opciones (cualquier otra variante).
+  endcomment
+  assign modo = s.modo_variantes | default: 'auto'
+  assign is_packs = false
+  unless product.has_only_default_variant
+    if modo == 'packs'
+      assign is_packs = true
+    elsif modo == 'auto'
+      assign is_packs = true
+      for v in product.variants
+        assign vn = v.title | split: 'x' | last | strip | plus: 0
+        if vn == 0
+          assign is_packs = false
+          break
+        endif
+      endfor
+    endif
+  endunless
+
+  assign base_price = 0
+  if is_packs
+    for v in product.variants
+      assign vn = v.title | split: 'x' | last | strip | plus: 0
+      if vn == 0
+        assign vn = forloop.index
+      endif
+      if vn == 1
+        assign base_price = v.price
+      endif
+    endfor
+    if base_price == 0
+      assign fv = product.variants.first
+      assign fvn = fv.title | split: 'x' | last | strip | plus: 0
+      if fvn == 0
+        assign fvn = 1
+      endif
+      assign base_price = fv.price | divided_by: fvn
+    endif
+  endif
+
+  assign selected = product.selected_or_first_available_variant
+  if is_packs and product.selected_variant == nil
+    for v in product.variants
+      if forloop.index == rec and v.available
+        assign selected = v
+      endif
+    endfor
+  endif
+
+  assign nombre = s.nombre | default: product.title
+  assign product_img = product.featured_image
+
+  assign slide_count = product.images.size
+  for b in section.blocks
+    if b.type == 'slide'
+      if b.settings.imagen != blank or b.settings.dato != blank or request.design_mode
+        assign slide_count = slide_count | plus: 1
+      endif
+    endif
+  endfor
+  if slide_count == 0
+    assign slide_count = 1
+  endif
+
+  assign own_ok = false
+  if settings.reviews_real and s.propias_cantidad >= 10 and s.propias_promedio > 0
+    assign own_ok = true
+  endif
+  assign ext_ok = false
+  if s.prueba_fuente != blank and s.prueba_promedio > 0
+    assign ext_ok = true
+  endif
+-%}
+
+<div class="lm tc" id="tc-{{ section.id }}" data-tc-root style="{% render 'tc-accent', preset: s.acento %}">
+<script type="application/json" data-tc-config>
+{
+  "packs": {{ is_packs | json }},
+  "porciones": {{ porciones | json }},
+  "porcionLabel": {{ por_label | json }},
+  "porDia": {{ s.por_dia | json }},
+  "unidad": {{ unidad | json }},
+  "unidades": {{ unidades | json }},
+  "stickySiempre": true,
+  "ofertaTexto": {{ s.oferta_texto | json }},
+  "ofertaFin": {{ s.oferta_fin | json }},
+  "stockUmbral": {{ s.stock_umbral | default: 0 | json }}
+}
+</script>
+<script type="application/ld+json">{{ product | structured_data }}</script>
+
+<div class="lm-top" id="tc-producto">
+<div class="lm-wrap">
+<div class="lm-top__grid">
+
+{%- comment -%} Galería: fotos del producto en Shopify + diapositivas del editor {%- endcomment -%}
+<div class="lm-gal" data-lm-gal>
+  <div class="lm-snap lm-gal__track" data-lm-track aria-label="Fotos de {{ nombre | escape }}" role="region" tabindex="0">
+    {%- assign idx = 0 -%}
+    {%- for img in product.images -%}
+      {%- assign img_alt = img.alt | default: nombre -%}
+      <div class="lm-slide">
+        {%- if forloop.first -%}
+          {{ img | image_url: width: 1400 | image_tag: class: 'lm-slide__photo', loading: 'eager', fetchpriority: 'high', alt: img_alt, sizes: '(min-width: 990px) 55vw, 86vw', widths: '500, 800, 1100, 1400' }}
+          {%- if s.chip_1 != blank -%}<span class="lm-float-chip" style="top:20px;left:18px"><i></i>{{ s.chip_1 }}</span>{%- endif -%}
+          {%- if s.chip_2 != blank -%}<span class="lm-float-chip" style="bottom:22px;right:16px;animation-delay:1.2s"><i></i>{{ s.chip_2 }}</span>{%- endif -%}
+        {%- else -%}
+          {{ img | image_url: width: 1400 | image_tag: class: 'lm-slide__photo', loading: 'lazy', alt: img_alt, sizes: '(min-width: 990px) 55vw, 86vw', widths: '500, 800, 1100, 1400' }}
+        {%- endif -%}
+      </div>
+      {%- assign idx = idx | plus: 1 -%}
+    {%- endfor -%}
+    {%- for b in section.blocks -%}{%- if b.type == 'slide' -%}
+      {%- assign bs = b.settings -%}
+      {%- if bs.imagen == blank and bs.dato == blank and request.design_mode == false -%}{%- continue -%}{%- endif -%}
+      {%- if bs.dato != blank -%}
+        <div class="lm-slide lm-slide--pink" {{ b.shopify_attributes }}><div class="lm-slide__center">
+          {%- if bs.titulo != blank -%}<span class="lm-eyebrow" style="color:var(--lm-brand-700)">{{ bs.titulo }}</span>{%- endif -%}
+          {%- assign dato_len = bs.dato | strip_html | size -%}
+          <span class="lm-slide__big" style="font-size:{% if dato_len > 4 %}clamp(44px,6vw,88px){% else %}clamp(96px,12vw,180px){% endif %}">{{ bs.dato }}</span>
+          {%- if bs.texto != blank -%}<span class="lm-lead">{{ bs.texto }}</span>{%- endif -%}
+        </div></div>
+      {%- else -%}
+        <div class="lm-slide" {{ b.shopify_attributes }}>
+          {%- liquid
+            assign sl_eager = false
+            if idx == 0
+              assign sl_eager = true
+            endif
+          -%}
+          {% render 'tc-img', image: bs.imagen, slot: bs.slot, alt: bs.alt, class: 'lm-slide__photo', position: bs.posicion, eager: sl_eager %}
+          {%- if bs.titulo != blank or bs.texto != blank -%}
+            <div class="lm-slide__box">{%- if bs.titulo != blank -%}<span style="font-family:var(--lm-serif);font-size:22px;line-height:1.15">{{ bs.titulo }}</span>{%- endif -%}{%- if bs.texto != blank -%}<span class="lm-small" style="color:var(--lm-ink-2)">{{ bs.texto }}</span>{%- endif -%}</div>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+      {%- assign idx = idx | plus: 1 -%}
+    {%- endif -%}{%- endfor -%}
+    {%- if idx == 0 -%}
+      <div class="lm-slide">{% render 'tc-img', slot: 'Foto 1: el producto de frente (la del anuncio)', alt: nombre, class: 'lm-slide__photo' %}</div>
+    {%- endif -%}
+  </div>
+  {%- if slide_count > 1 -%}
+  <button type="button" class="lm-gal__arrow lm-gal__arrow--prev" data-lm-prev aria-label="Imagen anterior">{% render 'lm-icon', name: 'left' %}</button>
+  <button type="button" class="lm-gal__arrow lm-gal__arrow--next" data-lm-next aria-label="Imagen siguiente">{% render 'lm-icon', name: 'right' %}</button>
+  <span class="lm-gal__count" data-lm-count aria-hidden="true">1 / {{ slide_count }}</span>
+  <div class="lm-gal__ui" data-lm-dots>
+    {%- for i in (1..slide_count) -%}<button type="button" class="lm-dot{% if forloop.first %} is-on{% endif %}" data-lm-go="{{ forloop.index0 }}" aria-label="Ver imagen {{ i }}"></button>{%- endfor -%}
+  </div>
+  <div class="lm-gal__thumbs">
+    {%- assign t = 0 -%}
+    {%- for img in product.images -%}
+      <button type="button" class="lm-thumb{% if t == 0 %} is-on{% endif %}" data-lm-go="{{ t }}" aria-label="Ver imagen {{ t | plus: 1 }}">{{ img | image_url: width: 200 | image_tag: alt: '', loading: 'lazy' }}</button>
+      {%- assign t = t | plus: 1 -%}
+    {%- endfor -%}
+    {%- for b in section.blocks -%}{%- if b.type == 'slide' -%}
+      {%- if b.settings.imagen == blank and b.settings.dato == blank and request.design_mode == false -%}{%- continue -%}{%- endif -%}
+      {%- if b.settings.dato != blank -%}
+        <button type="button" class="lm-thumb{% if t == 0 %} is-on{% endif %}" data-lm-go="{{ t }}" aria-label="{{ b.settings.titulo | default: 'Dato' | escape }}" style="background:var(--lm-brand-100)">{%- assign dato_txt = b.settings.dato | strip_html -%}{%- if dato_txt.size <= 4 -%}<b>{{ dato_txt }}</b>{%- endif -%}<small>{{ b.settings.miniatura | default: 'Dato' }}</small></button>
+      {%- else -%}
+        <button type="button" class="lm-thumb{% if t == 0 %} is-on{% endif %}" data-lm-go="{{ t }}" aria-label="Ver imagen {{ t | plus: 1 }}">{% render 'tc-img', image: b.settings.imagen, alt: '', width: 200 %}</button>
+      {%- endif -%}
+      {%- assign t = t | plus: 1 -%}
+    {%- endif -%}{%- endfor -%}
+  </div>
+  {%- endif -%}
+</div>
+
+<div class="lm-buy">
+  <div style="display:flex;flex-direction:column;gap:10px">
+    {%- if s.etiqueta != blank or s.detalle != blank -%}
+    <div class="lm-buy__meta lm-in">
+      {%- if s.etiqueta != blank -%}<span class="lm-pill">{{ s.etiqueta }}</span>{%- endif -%}
+      {%- if s.detalle != blank -%}<span class="lm-small">{{ s.detalle }}</span>{%- endif -%}
+    </div>
+    {%- endif -%}
+    {%- if own_ok -%}
+      <a href="#opiniones" class="tc-rating lm-in">{% render 'lm-stars', rating: s.propias_promedio, size: 15 %}<b>{{ s.propias_promedio | replace: '.', ',' }}</b><span>{{ s.propias_cantidad }} reseñas de clientes</span></a>
+    {%- elsif ext_ok -%}
+      <a href="#opiniones" class="tc-rating lm-in">{% render 'lm-stars', rating: s.prueba_promedio, size: 15 %}<b>{{ s.prueba_promedio | replace: '.', ',' }}</b><span>{% if s.prueba_cantidad != blank %}{{ s.prueba_cantidad }} reseñas en {% else %}en {% endif %}{{ s.prueba_fuente }}</span></a>
+    {%- endif -%}
+    {%- if s.titulo_modo == 'producto' or s.hook == blank -%}
+      <h1 class="lm-in lm-in--2">{{ nombre }}</h1>
+    {%- else -%}
+      <h1 class="lm-in lm-in--2">{{ s.hook }}{% if s.hook_it != blank %} <span class="lm-it">{{ s.hook_it }}</span>{% endif %}<span class="tc-sr"> · {{ nombre }}</span></h1>
+      <p class="tc-prodname lm-in lm-in--2" aria-hidden="true">{{ nombre }}</p>
+    {%- endif -%}
+    {%- if s.deseo != blank -%}<p class="lm-desire lm-in lm-in--3">{{ s.deseo }}</p>{%- endif -%}
+  </div>
+
+  <div class="lm-price lm-in lm-in--4" aria-live="polite">
+    <span class="lm-price__now" data-lm-price>{{ selected.price | money }}</span>
+    <span class="lm-price__was" data-lm-was hidden></span>
+    <span class="lm-price__save" data-lm-save hidden></span>
+    <span class="lm-price__day" data-lm-day hidden></span>
+  </div>
+  {%- if tr_pct > 0 -%}
+    {%- assign tr_off = selected.price | times: tr_pct | divided_by: 100 -%}
+    {%- assign tr_price = selected.price | minus: tr_off -%}
+    <p class="tc-transfer"><b data-tc-transfer>{{ tr_price | money }}</b> con transferencia{% if settings.transfer_code != blank %} · código <span class="tc-code">{{ settings.transfer_code }}</span>{% endif %}</p>
+  {%- endif -%}
+
+  {%- if s.bullet_1 != blank or s.bullet_2 != blank or s.bullet_3 != blank -%}
+  <ul class="lm-bullets">
+    {%- for k in (1..3) -%}
+      {%- assign key = 'bullet_' | append: k -%}
+      {%- if s[key] != blank -%}<li><i>{% render 'lm-icon', name: 'check' %}</i><span>{{ s[key] }}</span></li>{%- endif -%}
+    {%- endfor -%}
+  </ul>
+  {%- endif -%}
+
+  {% render 'tc-trust' %}
+
+  <div id="comprar" class="tc-sec-anchor">
+  {%- form 'product', product, id: form_id, class: 'lm-form', novalidate: 'novalidate', data-tc-form: '' -%}
+    {%- if product.has_only_default_variant -%}
+      <input type="radio" name="id" value="{{ selected.id }}" checked hidden tabindex="-1" aria-hidden="true"
+        data-n="1" data-price="{{ selected.price }}" data-was="{{ selected.compare_at_price | default: 0 }}" data-save="{% if selected.compare_at_price > selected.price %}{{ selected.compare_at_price | minus: selected.price }}{% else %}0{% endif %}" data-day="0" data-inv="{% if selected.inventory_management == 'shopify' and selected.inventory_policy == 'deny' %}{{ selected.inventory_quantity }}{% endif %}" data-name="{{ nombre | escape }}" {% unless selected.available %}disabled{% endunless %}>
+    {%- else -%}
+    <fieldset class="lm-packs">
+      <legend class="lm-packs__head">{% if is_packs %}{{ s.packs_titulo | default: 'Elegí tu pack' }}{% elsif product.options.size == 1 %}{{ product.options.first }}{% else %}Elegí una opción{% endif %} {%- if is_packs and s.packs_sub != blank %} <span>{{ s.packs_sub }}</span>{% endif %}</legend>
+      {%- assign prev_price = 0 -%}
+      {%- for v in product.variants -%}
+        {%- liquid
+          assign n = 1
+          assign save = 0
+          assign each = 0
+          assign day = 0
+          assign was = 0
+          assign pack_note = ''
+          if is_packs
+            assign n = v.title | split: 'x' | last | strip | plus: 0
+            if n == 0
+              assign n = forloop.index
+            endif
+            assign full = base_price | times: n
+            assign save = full | minus: v.price
+            if save > 0
+              assign was = full
+            endif
+            assign each = v.price | divided_by: n
+            if n == 1
+              assign vname = '1 ' | append: unidad
+            else
+              assign vname = n | append: ' ' | append: unidades
+            endif
+            case n
+              when 1
+                assign pack_note = s.nota_x1
+              when 2
+                assign pack_note = s.nota_x2
+              when 3
+                assign pack_note = s.nota_x3
+            endcase
+          else
+            assign vname = v.title
+            if v.compare_at_price > v.price
+              assign was = v.compare_at_price
+              assign save = v.compare_at_price | minus: v.price
+            endif
+          endif
+          if porciones > 0
+            assign por = porciones | times: n
+            assign day = v.price | divided_by: por
+          endif
+          assign inv = ''
+          if v.inventory_management == 'shopify' and v.inventory_policy == 'deny'
+            assign inv = v.inventory_quantity
+          endif
+          assign inc = 0
+          if is_packs and forloop.index > 1 and prev_price > 0
+            assign inc = v.price | minus: prev_price
+          endif
+        -%}
+        <label class="lm-pack{% unless v.available %} is-unavailable{% endunless %}">
+          <input type="radio" name="id" value="{{ v.id }}" {% if v.id == selected.id %}checked{% endif %} {% unless v.available %}disabled{% endunless %}
+            data-n="{{ n }}" data-price="{{ v.price }}" data-was="{{ was }}" data-save="{{ save }}" data-day="{{ day }}" data-inv="{{ inv }}" data-name="{{ vname | escape }}">
+          <span class="lm-pack__radio" aria-hidden="true"></span>
+          <span class="lm-pack__main">
+            <span class="lm-pack__name">{{ vname }}</span>
+            {%- liquid
+              assign sub = ''
+              if porciones > 0
+                assign sub = porciones | times: n | append: ' ' | append: por_label
+              endif
+              if pack_note != blank
+                if sub != ''
+                  assign sub = sub | append: ' · '
+                endif
+                assign sub = sub | append: pack_note
+              endif
+              unless v.available
+                if sub != ''
+                  assign sub = sub | append: ' · '
+                endif
+                assign sub = sub | append: 'Sin stock'
+              endunless
+            -%}
+            {%- if sub != '' -%}<span class="lm-pack__sub">{{ sub }}</span>{%- endif -%}
+            {%- if is_packs and s.mostrar_incremento and inc > 0 and inc < base_price -%}<span class="tc-inc">La {{ n }}.ª por {{ inc | money_without_trailing_zeros }}</span>{%- endif -%}
+            {%- if threshold_cents > 0 and v.price >= threshold_cents -%}<span class="lm-pack__free">Envío gratis</span>{%- endif -%}
+          </span>
+          <span class="lm-pack__side">
+            <span class="lm-pack__price">{{ v.price | money }}</span>
+            {%- if is_packs and n > 1 -%}<span class="lm-pack__each">{{ each | money }} c/u</span>{%- endif -%}
+            {%- if save > 0 -%}<span class="lm-pack__save">Ahorrás {{ save | money }}</span>{%- endif -%}
+          </span>
+          {%- if is_packs and forloop.index == rec and s.texto_recomendado != blank -%}<span class="lm-pack__badge">{{ s.texto_recomendado }}</span>{%- endif -%}
+        </label>
+        {%- assign prev_price = v.price -%}
+      {%- endfor -%}
+    </fieldset>
+    {%- endif -%}
+
+    {%- if s.mostrar_cantidad and is_packs == false -%}
+      <div class="tc-qtyfield" style="margin-top:14px">
+        <label for="tc-qty-{{ section.id }}">Cantidad</label>
+        <span class="tc-qty">
+          <button type="button" data-tc-step="-1" aria-label="Restar una unidad">{% render 'lm-icon', name: 'minus' %}</button>
+          <input id="tc-qty-{{ section.id }}" type="number" name="quantity" value="1" min="1" max="99" inputmode="numeric" style="width:44px;border:0;text-align:center;font:inherit;background:transparent">
+          <button type="button" data-tc-step="1" aria-label="Sumar una unidad">{% render 'lm-icon', name: 'plus' %}</button>
+        </span>
+      </div>
+    {%- else -%}
+      <input type="hidden" name="quantity" value="1">
+    {%- endif -%}
+
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px">
+      <button type="button" class="lm-nudge" data-lm-nudge hidden>
+        <span class="lm-nudge__ico">{% render 'lm-icon', name: 'up' %}</span>
+        <span><b data-lm-nudge-title></b></span>
+        <span class="lm-nudge__cta">Cambiar</span>
+      </button>
+      <div class="lm-bar" data-lm-bar hidden><span class="lm-bar__msg" data-bar-msg></span><div class="lm-bar__track"><div class="lm-bar__fill" data-bar-fill></div></div></div>
+      <div class="lm-promo" data-lm-promo hidden>
+        <span class="lm-promo__txt">{{ s.oferta_texto }}</span>
+        <div class="lm-clock" role="timer" aria-label="Tiempo que queda de la oferta"><span><b data-lm-d>0</b><small>días</small></span><span><b data-lm-h>00</b><small>horas</small></span><span><b data-lm-m>00</b><small>min</small></span><span><b data-lm-s>00</b><small>seg</small></span></div>
+      </div>
+      <div class="lm-stock" data-lm-stock hidden><span data-lm-stock-txt></span><div class="lm-bar__track" style="height:4px"><div class="lm-bar__fill" data-bar-fill></div></div></div>
+      <div class="lm-ship" data-lm-ship hidden>
+        <div class="lm-ship__row"><span class="lm-live" aria-hidden="true"></span><span data-lm-ship-txt></span></div>
+        <span class="lm-ship__eta" data-lm-eta hidden></span>
+      </div>
+      <p class="tc-form-error" data-tc-error role="alert" hidden></p>
+      {%- comment -%} type="button" a propósito: algunas apps de pago contra entrega ocultan los button[type=submit] de los formularios de carrito. tc.js envía el formulario. {%- endcomment -%}
+      <button type="button" class="lm-btn lm-shine" data-tc-submit {% unless selected.available %}disabled{% endunless %}>
+        {% render 'lm-icon', name: 'bag' %}<span data-lm-btn-label>{% if selected.available %}Agregar al carrito · {{ selected.price | money }}{% else %}Sin stock{% endif %}</span>
+      </button>
+      {%- if settings.pay_cod or settings.riesgo_texto != blank -%}
+        <p class="tc-risk">{% render 'lm-icon', name: 'shield' %}<span>{% if settings.pay_cod %}<b>Pagás al recibir:</b> no adelantás nada. {% endif %}{{ settings.riesgo_texto }}</span></p>
+      {%- endif -%}
+      {%- capture cuotas -%}{% render 'pay-copy', format: 'installments' %}{%- endcapture -%}
+      {%- if cuotas != blank -%}<p class="tc-pays">{{ cuotas }}</p>{%- endif -%}
+    </div>
+  {%- endform -%}
+  </div>
+
+  {%- assign infos = section.blocks | where: 'type', 'info' -%}
+  {%- assign show_desc = false -%}
+  {%- if s.mostrar_descripcion and product.description != blank -%}{%- assign show_desc = true -%}{%- endif -%}
+  {%- if infos.size > 0 or show_desc -%}
+  <div class="lm-acc">
+    {%- if show_desc -%}<details><summary>Descripción{% render 'lm-icon', name: 'chevron' %}</summary><div class="lm-acc__body tc-rte">{{ product.description }}</div></details>{%- endif -%}
+    {%- for b in infos -%}
+      <details {{ b.shopify_attributes }}><summary>{{ b.settings.titulo }}{% render 'lm-icon', name: 'chevron' %}</summary><div class="lm-acc__body">{% render 'store-tokens', text: b.settings.texto %}</div></details>
+    {%- endfor -%}
+  </div>
+  {%- endif -%}
+  {%- if s.nota != blank -%}<p class="lm-small">{{ s.nota }}</p>{%- endif -%}
+</div>
+
+</div>
+</div>
+</div>
+
+{%- if s.menu != blank -%}
+{%- assign lines = s.menu | newline_to_br | split: '<br />' -%}
+<nav class="lm-nav" aria-label="Secciones de la página">
+  <div class="lm-snap">
+    {%- for l in lines -%}
+      {%- assign parts = l | strip | split: '|' -%}
+      {%- if parts.size == 2 -%}<a href="{{ parts[1] | strip }}"{% if forloop.first %} class="is-main"{% endif %}>{{ parts[0] | strip }}</a>{%- endif -%}
+    {%- endfor -%}
+  </div>
+</nav>
+{%- endif -%}
+
+{%- if s.cinta != blank -%}
+{%- assign items = s.cinta | split: '|' -%}
+<div class="lm-marquee" aria-hidden="true"><div class="lm-marquee__row">
+  {%- for r in (1..2) -%}{%- for it in items -%}<span>{{ it | strip }}</span><i></i>{%- endfor -%}{%- endfor -%}
+</div></div>
+{%- endif -%}
+
+<div class="lm-sticky" data-lm-sticky inert>
+  <div class="lm-sticky__inner">
+    <div class="lm-sticky__prod"><span>{% if product_img %}{{ product_img | image_url: width: 120 | image_tag: alt: '' }}{% endif %}</span><div>{{ nombre }}<small data-lm-sticky-name></small></div></div>
+    <div class="lm-sticky__ship" data-lm-sticky-ship hidden><span class="lm-live" aria-hidden="true"></span><span data-lm-sticky-ship-txt></span></div>
+    <button type="button" class="lm-btn lm-shine" data-lm-add {% unless selected.available %}disabled{% endunless %}><span>Agregar al carrito</span><span data-lm-sticky-price style="font-variant-numeric:tabular-nums">{{ selected.price | money }}</span></button>
+  </div>
+</div>
+</div>
+
+{% schema %}
+{
+  "name": "TC · Compra",
+  "tag": "section",
+  "class": "tc-section",
+  "enabled_on": { "templates": ["product"] },
+  "max_blocks": 16,
+  "settings": [
+    { "type": "select", "id": "acento", "label": "Color de acento", "default": "tema", "options": [
+      { "value": "tema", "label": "El del tema" }, { "value": "ciruela", "label": "Ciruela" }, { "value": "violeta", "label": "Violeta" }, { "value": "salvia", "label": "Salvia" },
+      { "value": "oceano", "label": "Océano" }, { "value": "terracota", "label": "Terracota" }, { "value": "grafito", "label": "Grafito" }
+    ], "info": "Dejalo en \"El del tema\": el acento se elige una vez en Tema → Configuración." },
+    { "type": "header", "content": "Portada: el hook del anuncio" },
+    { "type": "select", "id": "titulo_modo", "label": "Titular", "default": "hook", "options": [
+      { "value": "hook", "label": "Frase del anuncio (tráfico de anuncios)" },
+      { "value": "producto", "label": "Nombre del producto" }
+    ] },
+    { "type": "text", "id": "hook", "label": "Frase del anuncio", "info": "Palabra por palabra igual a la primera frase del anuncio. Nunca afirmes un defecto de quien lee. Vacío = nombre del producto." },
+    { "type": "text", "id": "hook_it", "label": "Frase del anuncio: parte en itálica" },
+    { "type": "text", "id": "etiqueta", "label": "Volanta (categoría)" },
+    { "type": "text", "id": "detalle", "label": "Dato junto a la volanta", "info": "Ej.: 110 ml · 82 porciones." },
+    { "type": "text", "id": "nombre", "label": "Nombre del producto (vacío = el de Shopify)" },
+    { "type": "textarea", "id": "deseo", "label": "Promesa (línea de deseo)", "info": "La promesa del anuncio, en una o dos frases." },
+    { "type": "text", "id": "bullet_1", "label": "Beneficio 1", "info": "Mecanismo o activo." },
+    { "type": "text", "id": "bullet_2", "label": "Beneficio 2", "info": "Diferencial." },
+    { "type": "text", "id": "bullet_3", "label": "Beneficio 3", "info": "Rendimiento (porciones, días, usos)." },
+    { "type": "text", "id": "chip_1", "label": "Etiqueta sobre la foto 1" },
+    { "type": "text", "id": "chip_2", "label": "Etiqueta sobre la foto 2" },
+    { "type": "header", "content": "Prueba social (solo real)" },
+    { "type": "paragraph", "content": "Arriba del titular se muestra, en este orden: tus reseñas propias (si activaste Prueba social en la configuración del tema y hay 10 o más) o la calificación de otra tienda con su nombre. Sin fuente, no se muestra nada." },
+    { "type": "text", "id": "prueba_fuente", "label": "Calificación externa: fuente", "info": "Ej.: iHerb, Amazon, la tienda oficial de la marca. Se imprime siempre junto al número." },
+    { "type": "range", "id": "prueba_promedio", "label": "Calificación externa: promedio", "min": 0, "max": 5, "step": 0.1, "default": 0 },
+    { "type": "text", "id": "prueba_cantidad", "label": "Calificación externa: cantidad de reseñas", "info": "Ej.: 1.961" },
+    { "type": "number", "id": "propias_cantidad", "label": "Reseñas propias: cantidad", "default": 0, "info": "Con 10 o más (y Prueba social activada) reemplazan a la externa." },
+    { "type": "range", "id": "propias_promedio", "label": "Reseñas propias: promedio", "min": 0, "max": 5, "step": 0.1, "default": 0 },
+    { "type": "header", "content": "Variantes y packs" },
+    { "type": "select", "id": "modo_variantes", "label": "Cómo mostrar las variantes", "default": "auto", "options": [
+      { "value": "auto", "label": "Automático" },
+      { "value": "packs", "label": "Packs (Pack x1, x2, x3)" },
+      { "value": "opciones", "label": "Opciones (talle, color, sabor…)" }
+    ], "info": "Automático: si todas las variantes terminan en xN (Pack x2, Caja x6) son packs con ahorro calculado; si no, opciones." },
+    { "type": "text", "id": "unidad", "label": "Unidad (singular)", "default": "unidad", "info": "Ej.: crema, bolsa, frasco." },
+    { "type": "text", "id": "unidades", "label": "Unidad (plural)", "default": "unidades" },
+    { "type": "number", "id": "porciones", "label": "Porciones por unidad (0 = no mostrar)", "default": 0 },
+    { "type": "text", "id": "porcion_label", "label": "Nombre de la porción", "default": "porciones" },
+    { "type": "checkbox", "id": "por_dia", "label": "Mostrar precio por día (1 porción por día)", "default": false },
+    { "type": "range", "id": "pack_recomendado", "label": "Pack preseleccionado (posición de la variante)", "min": 1, "max": 3, "step": 1, "default": 2 },
+    { "type": "text", "id": "texto_recomendado", "label": "Etiqueta del pack preseleccionado", "default": "Recomendado", "info": "\"El más elegido\" solo si de verdad es el que más se vende." },
+    { "type": "text", "id": "packs_titulo", "label": "Título del selector", "default": "Elegí tu pack" },
+    { "type": "text", "id": "packs_sub", "label": "Bajada del selector", "default": "Más unidades, menos por unidad" },
+    { "type": "text", "id": "nota_x1", "label": "Nota del pack x1", "info": "Ej.: Para probarlo." },
+    { "type": "text", "id": "nota_x2", "label": "Nota del pack x2", "info": "Ej.: Dura el doble." },
+    { "type": "text", "id": "nota_x3", "label": "Nota del pack x3", "info": "Ej.: Mejor precio por unidad." },
+    { "type": "checkbox", "id": "mostrar_incremento", "label": "Mostrar cuánto cuesta la unidad extra (\"La 2.ª por $10.000\")", "default": true },
+    { "type": "checkbox", "id": "mostrar_cantidad", "label": "Mostrar selector de cantidad (solo en modo opciones)", "default": false },
+    { "type": "header", "content": "Urgencia real" },
+    { "type": "paragraph", "content": "Despacho del día, entrega estimada, garantía y pagos: Tema → Configuración." },
+    { "type": "text", "id": "oferta_texto", "label": "Oferta con fin real: texto", "info": "Vacío = sin oferta. Al vencer, desaparece sola." },
+    { "type": "text", "id": "oferta_fin", "label": "Oferta: fecha y hora de fin (AAAA-MM-DD HH:MM)", "info": "Hora del depósito (huso de la configuración del tema)." },
+    { "type": "number", "id": "stock_umbral", "label": "Mostrar stock real cuando queden menos de (0 = nunca)", "default": 0, "info": "Sale del inventario de Shopify." },
+    { "type": "header", "content": "Debajo de la compra" },
+    { "type": "checkbox", "id": "mostrar_descripcion", "label": "Mostrar la descripción de Shopify como primer acordeón", "default": true },
+    { "type": "textarea", "id": "menu", "label": "Menú de secciones", "info": "Una línea por link: Texto|#ancla. Vacío = sin menú.", "default": "Opiniones|#opiniones\nCómo se usa|#como-se-usa\nPreguntas|#preguntas" },
+    { "type": "text", "id": "cinta", "label": "Cinta de beneficios (separados por |)" },
+    { "type": "text", "id": "nota", "label": "Nota legal corta bajo la compra" }
+  ],
+  "blocks": [
+    {
+      "type": "slide", "name": "Foto o dato de galería",
+      "settings": [
+        { "type": "paragraph", "content": "Van después de las fotos del producto. Orden sugerido: el gesto en uso, el resultado o la sensación, etiqueta o textura, tamaño real, lo que llega." },
+        { "type": "image_picker", "id": "imagen", "label": "Foto" },
+        { "type": "text", "id": "slot", "label": "Qué foto va acá (se ve en el editor si falta)", "default": "Foto: el producto en uso" },
+        { "type": "text", "id": "alt", "label": "Texto alternativo" },
+        { "type": "text", "id": "posicion", "label": "Encuadre (object-position)", "default": "50% 50%" },
+        { "type": "text", "id": "titulo", "label": "Título sobre la foto (o volanta del dato)" },
+        { "type": "text", "id": "texto", "label": "Texto" },
+        { "type": "text", "id": "dato", "label": "Dato grande (si lo completás, la diapositiva es un dato, sin foto)" },
+        { "type": "text", "id": "miniatura", "label": "Etiqueta de la miniatura del dato" }
+      ]
+    },
+    {
+      "type": "info", "name": "Acordeón de información",
+      "settings": [
+        { "type": "text", "id": "titulo", "label": "Título", "default": "Modo de uso" },
+        { "type": "richtext", "id": "texto", "label": "Texto", "info": "Podés usar [envio_gratis_desde], [envio_fijo], [medios_de_pago], [cuotas] y [garantia]." }
+      ]
+    }
+  ],
+  "presets": [ { "name": "TC · Compra" } ]
+}
+{% endschema %}

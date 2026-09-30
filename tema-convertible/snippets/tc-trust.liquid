@@ -1,0 +1,12 @@
+{%- comment -%}
+  Línea de confianza: envío gratis (si hay umbral), garantía, pago y despacho, todo desde Tema → Configuración.
+  Cada ítem aparece solo si está configurado: nunca se promete algo que el checkout no cumple.
+  Uso: {% render 'tc-trust' %}
+{%- endcomment -%}
+{%- assign threshold_cents = settings.free_shipping_threshold | times: 100 -%}
+<div class="tc-trust">
+  {%- if threshold_cents > 0 -%}<span>{% render 'lm-icon', name: 'truck' %}Envío gratis desde {{ threshold_cents | money_without_trailing_zeros }}</span>{%- endif -%}
+  {%- if settings.garantia_corta != blank -%}<span>{% render 'lm-icon', name: 'return' %}{{ settings.garantia_corta }}</span>{%- endif -%}
+  <span>{% render 'lm-icon', name: 'lock' %}{% render 'pay-copy', format: 'micro' %}</span>
+  {%- if settings.despacho_texto != blank -%}<span>{% render 'lm-icon', name: 'clock' %}{{ settings.despacho_texto }}</span>{%- endif -%}
+</div>
