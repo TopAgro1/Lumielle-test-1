@@ -42,3 +42,9 @@ Todo está en el objeto `LM` al principio del `<script>` de `index.html`:
 - "Rethinking the aging neck", European Journal of Plastic Surgery (2026): https://link.springer.com/article/10.1007/s00238-026-02520-9
 - American Academy of Dermatology, "How to apply sunscreen": https://www.aad.org/public/everyday-care/sun-protection/shade-clothing-sunscreen/how-to-apply-sunscreen
 - Kafi y col., "Improvement of naturally aged skin with vitamin A (retinol)", Archives of Dermatology (2007): https://pubmed.ncbi.nlm.nih.gov/17515510/
+
+## Tema de la tienda (Shopify)
+
+- `tema/sections/lm-home-hero.liquid` y `tema/snippets/lm-card-proof.liquid`: portada de la home con las tarjetas de Trío, Lisa y Pausa. Muestran prueba social solo con datos reales (app de reseñas o metacampo `custom.vendidos`; sin datos, el pago al recibir), cuotas sin interés con el valor de la cuota, precio con transferencia y el pack que llega al envío gratis. Están subidas al tema sin publicar "Lumielle belleza en casa v2 (Claude)".
+- `docs/auditoria-cleanfy.md`: qué hace Cleanfy para convertir en Argentina, qué le sirve a Lumielle y alertas del tema.
+- `docs/prompts-fotos.md`: prompts de ChatGPT para la tarjeta, la galería y los anuncios de cada producto.
