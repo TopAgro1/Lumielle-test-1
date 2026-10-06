@@ -100,7 +100,7 @@
           </span>
           <span class="lmh-card__body">
             {%- if b.settings.volanta != blank -%}<small class="lmh-card__vol">{{ b.settings.volanta }}</small>{%- endif -%}
-            {% render 'lm-card-proof', product: p, min_reviews: s.min_resenas, ext_fuente: b.settings.ext_fuente, ext_promedio: b.settings.ext_promedio, ext_cantidad: b.settings.ext_cantidad, ext_mismo: b.settings.ext_mismo, garantia: s.garantia_corta %}
+            {% render 'lm-card-proof', product: p, min_reviews: s.min_resenas, garantia: s.garantia_corta %}
             <span class="lmh-card__hook">{{ b.settings.hook | default: p.title }}</span>
             {%- if unit.price > 0 -%}
             <span class="lmh-card__price">
@@ -207,7 +207,7 @@
     { "type": "text", "id": "cta_url", "label": "Botón principal: link (vacío = baja a #productos)" },
     { "type": "text", "id": "garantia_corta", "label": "Garantía corta", "default": "30 días de garantía" },
     { "type": "header", "content": "Tarjetas: pago y prueba social" },
-    { "type": "paragraph", "content": "La prueba social sale sola de datos reales: la app de reseñas (metacampos reviews.rating y reviews.rating_count) y el metacampo de producto custom.vendidos. Sin datos, la tarjeta muestra el pago al recibir." },
+    { "type": "paragraph", "content": "La prueba social sale sola de datos reales: la app de reseñas (metacampos reviews.rating y reviews.rating_count) y el metacampo de producto custom.vendidos. No se escriben puntajes a mano. Sin datos, la tarjeta muestra el pago al recibir." },
     { "type": "number", "id": "min_resenas", "label": "Promedio y estrellas desde (reseñas propias)", "default": 10 },
     { "type": "select", "id": "cuotas", "label": "Cuotas sin interés en la tarjeta", "default": "6", "options": [
       { "value": "3", "label": "3 cuotas" }, { "value": "6", "label": "6 cuotas" }, { "value": "12", "label": "12 cuotas" }
@@ -224,13 +224,7 @@
         { "type": "text", "id": "hook", "label": "Hook: el dolor, en una frase" },
         { "type": "text", "id": "boton", "label": "Texto del link (escritorio)", "default": "Ver el producto" },
         { "type": "image_picker", "id": "imagen", "label": "Foto (vacío = la del producto)" },
-        { "type": "text", "id": "etiqueta", "label": "Etiqueta sobre la foto (vacío = Nuevo los primeros días)", "info": "\"Más vendido\" solo si es real." },
-        { "type": "header", "content": "Calificación del mismo modelo en otra tienda" },
-        { "type": "paragraph", "content": "Opcional. Solo si es exactamente el mismo modelo: uno parecido no se muestra en la tarjeta. Cuando haya reseñas propias, las reemplazan." },
-        { "type": "text", "id": "ext_fuente", "label": "Fuente (ej. Mercado Libre)" },
-        { "type": "range", "id": "ext_promedio", "label": "Promedio", "min": 0, "max": 5, "step": 0.1, "default": 0 },
-        { "type": "number", "id": "ext_cantidad", "label": "Cantidad de reseñas" },
-        { "type": "checkbox", "id": "ext_mismo", "label": "Confirmo que es el mismo modelo", "default": false }
+        { "type": "text", "id": "etiqueta", "label": "Etiqueta sobre la foto (vacío = Nuevo los primeros días)", "info": "\"Más vendido\" solo si es real." }
       ]
     }
   ],
