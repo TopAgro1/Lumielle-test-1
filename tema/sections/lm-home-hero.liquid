@@ -1,0 +1,126 @@
+{%- comment -%}
+  Lumielle v2 · Portada de la home con selector de producto.
+  Primera pantalla: volanta, titular con la promesa, bajada, un botón y la línea de confianza (envío, garantía, pago).
+  Debajo, un acceso por producto que arranca por el dolor (no por la ficha técnica), con foto y precio real.
+  No usa fotos de stock ni una foto de portada: las imágenes son las de cada producto.
+{%- endcomment -%}
+{{ 'lm-colageno.css' | asset_url | stylesheet_tag }}
+{{ 'tc.css' | asset_url | stylesheet_tag }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+{%- liquid
+  assign s = section.settings
+  assign threshold_cents = settings.free_shipping_threshold | default: 0 | times: 100
+  assign picks = section.blocks | where: 'type', 'producto'
+-%}
+<div class="lm tc" style="{% render 'tc-accent', preset: s.acento %}">
+<section class="lmh">
+<div class="lm-wrap">
+  <div class="lmh__head">
+    {%- if s.eyebrow != blank -%}<span class="lm-eyebrow lm-in">{{ s.eyebrow }}</span>{%- endif -%}
+    <h1 class="lm-in lm-in--2">{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h1>
+    {%- if s.texto != blank -%}<p class="lm-desire lm-in lm-in--3">{% render 'store-tokens', text: s.texto %}</p>{%- endif -%}
+    {%- if s.cta_label != blank -%}
+    <div class="lmh__ctas lm-in lm-in--4">
+      <a href="{{ s.cta_url | default: '#productos' }}" class="lm-btn lm-shine">{{ s.cta_label }}{% render 'lm-icon', name: 'arrow' %}</a>
+    </div>
+    {%- endif -%}
+    <div class="tc-trust lm-in lm-in--4">
+      <span>{% render 'lm-icon', name: 'truck' %}{% if threshold_cents > 0 %}Envío gratis desde {{ threshold_cents | money_without_trailing_zeros }}{% else %}Envíos a todo el país{% endif %}</span>
+      {%- if s.garantia_corta != blank -%}<span>{% render 'lm-icon', name: 'return' %}{{ s.garantia_corta }}</span>{%- endif -%}
+      <span>{% render 'lm-icon', name: 'lock' %}{% render 'pay-copy', format: 'micro' %}</span>
+    </div>
+  </div>
+
+  {%- if picks.size > 0 -%}
+  <div class="lmh__picks lm-in lm-in--4">
+    {%- for b in picks -%}
+      {%- assign p = b.settings.producto -%}
+      {%- if p != blank -%}
+        {%- assign unit = p.variants.first -%}
+        <a class="lmh-card" href="{{ p.url }}" {{ b.shopify_attributes }}>
+          <span class="lmh-card__img">
+            {%- if b.settings.imagen != blank -%}{{ b.settings.imagen | image_url: width: 700 | image_tag: loading: 'lazy', alt: '', sizes: '(min-width: 990px) 30vw, 96px', widths: '240, 480, 700' }}{%- elsif p.featured_image -%}{{ p.featured_image | image_url: width: 700 | image_tag: loading: 'lazy', alt: '', sizes: '(min-width: 990px) 30vw, 96px', widths: '240, 480, 700' }}{%- endif -%}
+          </span>
+          <span class="lmh-card__body">
+            {%- if b.settings.volanta != blank -%}<small>{{ b.settings.volanta }}</small>{%- endif -%}
+            <b>{{ b.settings.hook | default: p.title }}</b>
+            {%- if unit.price > 0 -%}<em>Desde {{ unit.price | money_without_trailing_zeros }}</em>{%- else -%}<em>Muy pronto</em>{%- endif -%}
+            <span class="lmh-card__go">{{ b.settings.boton | default: 'Ver el producto' }}{% render 'lm-icon', name: 'arrow' %}</span>
+          </span>
+        </a>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+  {%- endif -%}
+</div>
+</section>
+</div>
+
+{% stylesheet %}
+.lmh{padding:16px 0 36px}
+.lmh__head{display:flex;flex-direction:column;gap:14px;max-width:780px}
+.lmh h1{font-size:34px;line-height:1.05}
+.lmh__ctas{display:flex;flex-direction:column;gap:10px}
+.lmh__picks{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin-top:24px}
+.lmh-card{display:grid;grid-template-columns:96px minmax(0,1fr);gap:14px;align-items:center;padding:10px;border:1px solid var(--lm-line);border-radius:var(--lm-r-lg);background:#fff;color:var(--lm-ink) !important;text-decoration:none;transition:border-color .2s,transform .2s,box-shadow .2s}
+.lmh-card:hover{border-color:var(--lm-brand-500);transform:translateY(-2px)}
+.lmh-card__img{position:relative;display:block;height:96px;border-radius:var(--lm-r-md);overflow:hidden;background:var(--lm-skin)}
+.lmh-card__img img{width:100%;height:100%;object-fit:cover;display:block}
+.lmh-card__body{display:flex;flex-direction:column;gap:4px;min-width:0}
+.lmh-card small{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--lm-brand-700)}
+.lmh-card b{font-size:15px;line-height:1.3;font-weight:600}
+.lmh-card em{font-style:normal;font-size:13px;font-weight:700;color:var(--lm-brand-700);font-variant-numeric:tabular-nums}
+.lmh-card__go{display:none;align-items:center;gap:8px;margin-top:6px;font-size:14px;font-weight:600;color:var(--lm-brand-700)}
+.lmh-card__go .lm-ico{width:18px;height:18px}
+@media (min-width:990px){
+  .lmh{padding:48px 0 88px}
+  .lmh h1{font-size:60px;line-height:1.02}
+  .lmh__ctas{flex-direction:row}
+  .lmh__ctas .lm-btn{width:auto;padding:0 32px}
+  .lmh__picks{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:56px}
+  .lmh-card{grid-template-columns:1fr;gap:0;padding:12px 12px 22px;border-radius:var(--lm-r-xl)}
+  .lmh-card__img{height:340px;border-radius:var(--lm-r-lg)}
+  .lmh-card__body{gap:8px;padding:18px 10px 0}
+  .lmh-card small{font-size:12px}
+  .lmh-card b{font-size:20px;line-height:1.25}
+  .lmh-card em{font-size:15px}
+  .lmh-card__go{display:inline-flex}
+}
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Lumielle · Portada",
+  "tag": "div",
+  "class": "tc-section",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "select", "id": "acento", "label": "Color de acento", "default": "violeta", "options": [
+      { "value": "ciruela", "label": "Ciruela" }, { "value": "violeta", "label": "Violeta (Lumielle)" }, { "value": "salvia", "label": "Salvia" },
+      { "value": "oceano", "label": "Océano" }, { "value": "terracota", "label": "Terracota" }, { "value": "grafito", "label": "Grafito" }
+    ] },
+    { "type": "text", "id": "eyebrow", "label": "Volanta", "default": "Belleza y bienestar en casa" },
+    { "type": "text", "id": "titulo", "label": "Titular (la promesa)", "default": "Cuidarte, sin turnos ni vueltas." },
+    { "type": "text", "id": "titulo_it", "label": "Titular: parte en itálica", "default": "En casa y a tu ritmo." },
+    { "type": "textarea", "id": "texto", "label": "Bajada", "info": "Podés usar [envio_gratis_desde], [envio_fijo], [medios_de_pago] y [cuotas]." },
+    { "type": "text", "id": "cta_label", "label": "Botón principal", "default": "Ver los productos" },
+    { "type": "text", "id": "cta_url", "label": "Botón principal: link (vacío = baja a #productos)" },
+    { "type": "text", "id": "garantia_corta", "label": "Garantía corta", "default": "30 días de garantía" }
+  ],
+  "blocks": [
+    {
+      "type": "producto", "name": "Acceso a producto",
+      "settings": [
+        { "type": "product", "id": "producto", "label": "Producto" },
+        { "type": "text", "id": "volanta", "label": "Volanta (el cuidado)" },
+        { "type": "text", "id": "hook", "label": "Hook: el dolor, en una frase" },
+        { "type": "text", "id": "boton", "label": "Texto del link (escritorio)", "default": "Ver el producto" },
+        { "type": "image_picker", "id": "imagen", "label": "Foto (vacío = la del producto)" }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Lumielle · Portada" } ]
+}
+{% endschema %}
