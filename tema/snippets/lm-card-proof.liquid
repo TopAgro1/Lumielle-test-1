@@ -1,0 +1,72 @@
+{%- comment -%}
+  Prueba social de una tarjeta de producto. Solo datos reales, en este orden:
+  1. Reseñas de clientas de la app de reseñas (metacampos estándar reviews.rating y reviews.rating_count):
+     promedio y estrellas desde `min_reviews` reseñas.
+  2. Unidades vendidas (metacampo de producto custom.vendidos, número entero), como en Mercado Libre: desde 10.
+  3. Calificación del mismo modelo en otra tienda, con la fuente a la vista. Si no es el mismo modelo, no se muestra.
+  4. Menos de `min_reviews` reseñas propias: solo la cantidad.
+  5. Sin datos: el pago al recibir (o la garantía), que sí existe en el checkout.
+  Con "Mostrar puntajes y cantidad de reseñas" apagado (Tema → Prueba social) muestra siempre el punto 5.
+  En celular se acorta como en Mercado Libre: ★ 4,8 (1.432). Lo que va en .lm-cproof__more solo se ve en escritorio.
+
+  Uso: {% render 'lm-card-proof', product: p, min_reviews: 10, ext_fuente: b.settings.ext_fuente, ext_promedio: b.settings.ext_promedio, ext_cantidad: b.settings.ext_cantidad, ext_mismo: b.settings.ext_mismo, garantia: section.settings.garantia_corta %}
+{%- endcomment -%}
+{%- liquid
+  assign min_rev = min_reviews | default: 10 | plus: 0
+  assign own_avg = 0
+  assign own_count = 0
+  assign sold = 0
+  assign ext_avg = 0
+  assign ext_count = 0
+  if settings.reviews_real
+    assign rv = product.metafields.reviews.rating.value
+    if rv != blank
+      assign own_avg = rv.rating | times: 1.0
+      assign scale = rv.scale_max | default: 5 | times: 1.0
+      if scale > 0 and scale != 5
+        assign own_avg = own_avg | times: 5 | divided_by: scale
+      endif
+      assign own_avg = own_avg | round: 1
+    endif
+    assign own_count = product.metafields.reviews.rating_count.value | default: 0 | plus: 0
+    assign sold = product.metafields.custom.vendidos.value | default: 0 | plus: 0
+    if ext_mismo and ext_fuente != blank and ext_promedio > 0 and ext_cantidad > 0
+      assign ext_avg = ext_promedio | times: 1.0 | round: 1
+      assign ext_count = ext_cantidad | plus: 0
+    endif
+  endif
+
+  assign sold_label = ''
+  if sold >= 1000
+    assign sold_label = sold | divided_by: 1000 | prepend: '+' | append: ' mil vendidos'
+  elsif sold >= 100
+    assign sold_label = sold | divided_by: 100 | times: 100 | prepend: '+' | append: ' vendidos'
+  elsif sold >= 10
+    assign sold_label = sold | divided_by: 10 | times: 10 | prepend: '+' | append: ' vendidos'
+  endif
+
+  comment
+    Miles con punto, como se escriben en Argentina (1.432).
+  endcomment
+  assign own_txt = own_count | append: ''
+  if own_count >= 1000
+    assign rest = own_count | modulo: 1000 | plus: 1000 | append: '' | slice: 1, 3
+    assign own_txt = own_count | divided_by: 1000 | append: '.' | append: rest
+  endif
+  assign ext_txt = ext_count | append: ''
+  if ext_count >= 1000
+    assign rest = ext_count | modulo: 1000 | plus: 1000 | append: '' | slice: 1, 3
+    assign ext_txt = ext_count | divided_by: 1000 | append: '.' | append: rest
+  endif
+-%}
+{%- if own_count >= min_rev and own_avg > 0 -%}
+  <span class="lm-cproof">{% render 'lm-stars', rating: own_avg, size: 14 %}<b>{{ own_avg | replace: '.', ',' }}</b><span>({{ own_txt }}<span class="lm-cproof__more"> reseñas</span>)</span>{% if sold_label != blank %}<span class="lm-cproof__more">· {{ sold_label }}</span>{% endif %}</span>
+{%- elsif sold_label != blank -%}
+  <span class="lm-cproof">{% render 'lm-icon', name: 'bag' %}<b>{{ sold_label }}</b>{% if own_count > 0 %}<span>· {{ own_txt }} {% if own_count == 1 %}reseña{% else %}reseñas{% endif %}</span>{% endif %}</span>
+{%- elsif ext_count > 0 -%}
+  <span class="lm-cproof">{% render 'lm-stars', rating: ext_avg, size: 14 %}<b>{{ ext_avg | replace: '.', ',' }}</b><span>({{ ext_txt }}<span class="lm-cproof__more"> reseñas</span>) en {{ ext_fuente }}</span></span>
+{%- elsif own_count > 0 -%}
+  <span class="lm-cproof">{% render 'lm-icon', name: 'chat' %}<span>{{ own_txt }} {% if own_count == 1 %}reseña{% else %}reseñas{% endif %} en {{ shop.name }}</span></span>
+{%- else -%}
+  <span class="lm-cproof lm-cproof--risk">{% render 'lm-icon', name: 'shield' %}<span>{% if settings.pay_cod %}Pagás al recibir<span class="lm-cproof__more">, sin adelantar nada</span>{% else %}{{ garantia | default: '30 días para devolverlo' }}{% endif %}</span></span>
+{%- endif -%}
