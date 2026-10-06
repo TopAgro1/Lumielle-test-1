@@ -1,0 +1,233 @@
+{%- comment -%}
+  Lumielle v2 · Portada de la home con selector de producto.
+  Primera pantalla: volanta, titular con la promesa, bajada, un botón y la línea de confianza (envío, garantía, pago).
+  Debajo, un acceso por producto que arranca por el dolor (no por la ficha técnica), con foto y precio real.
+  Cada tarjeta suma lo que en Argentina decide la compra, siempre con datos reales: prueba social
+  (snippet lm-card-proof: reseñas, vendidos o, sin datos, el pago al recibir), cuotas sin interés con el valor
+  de la cuota, precio con transferencia, y el pack que llega al envío gratis con su ahorro.
+  No usa fotos de stock ni una foto de portada: las imágenes son las de cada producto.
+{%- endcomment -%}
+{{ 'lm-colageno.css' | asset_url | stylesheet_tag }}
+{{ 'tc.css' | asset_url | stylesheet_tag }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+{%- liquid
+  assign s = section.settings
+  assign threshold_cents = settings.free_shipping_threshold | default: 0 | times: 100
+  assign picks = section.blocks | where: 'type', 'producto'
+  assign tr_pct = 0
+  if settings.pay_transfer and s.transfer_pct > 0
+    assign tr_pct = s.transfer_pct
+  endif
+  assign cuotas = s.cuotas | default: 6 | plus: 0
+  assign now_s = 'now' | date: '%s' | plus: 0
+  assign nuevo_s = s.nuevo_dias | default: 0 | times: 86400
+-%}
+<div class="lm tc" style="{% render 'tc-accent', preset: s.acento %}">
+<section class="lmh">
+<div class="lm-wrap">
+  <div class="lmh__head">
+    {%- if s.eyebrow != blank -%}<span class="lm-eyebrow lm-in">{{ s.eyebrow }}</span>{%- endif -%}
+    <h1 class="lm-in lm-in--2">{{ s.titulo }}{% if s.titulo_it != blank %} <span class="lm-it">{{ s.titulo_it }}</span>{% endif %}</h1>
+    {%- if s.texto != blank -%}<p class="lm-desire lm-in lm-in--3">{% render 'store-tokens', text: s.texto %}</p>{%- endif -%}
+    {%- if s.cta_label != blank -%}
+    <div class="lmh__ctas lm-in lm-in--4">
+      <a href="{{ s.cta_url | default: '#productos' }}" class="lm-btn lm-shine">{{ s.cta_label }}{% render 'lm-icon', name: 'arrow' %}</a>
+    </div>
+    {%- endif -%}
+    <div class="tc-trust lm-in lm-in--4">
+      <span>{% render 'lm-icon', name: 'truck' %}{% if threshold_cents > 0 %}Envío gratis desde {{ threshold_cents | money_without_trailing_zeros }}{% else %}Envíos a todo el país{% endif %}</span>
+      {%- if s.garantia_corta != blank -%}<span>{% render 'lm-icon', name: 'return' %}{{ s.garantia_corta }}</span>{%- endif -%}
+      <span>{% render 'lm-icon', name: 'lock' %}{% render 'pay-copy', format: 'micro' %}</span>
+    </div>
+  </div>
+
+  {%- if picks.size > 0 -%}
+  <div class="lmh__picks lm-in lm-in--4">
+    {%- for b in picks -%}
+      {%- assign p = b.settings.producto -%}
+      {%- if p != blank -%}
+        {%- liquid
+          comment
+            Unidad = variante "Pack x1". El pack que llega al envío gratis y su ahorro salen de los precios de Shopify
+            y del umbral de Tema → Conversión, igual que en la ficha y en el checkout.
+          endcomment
+          assign unit = p.variants.first
+          assign free_n = 0
+          assign free_price = 0
+          assign pack2 = nil
+          for v in p.variants
+            assign vn = v.title | split: 'x' | last | plus: 0
+            if vn == 0
+              assign vn = forloop.index
+            endif
+            if vn == 1
+              assign unit = v
+            elsif vn == 2
+              assign pack2 = v
+            endif
+            if free_n == 0 and threshold_cents > 0 and v.price >= threshold_cents
+              assign free_n = vn
+              assign free_price = v.price
+            endif
+          endfor
+          assign free_save = 0
+          if free_n > 1
+            assign free_save = unit.price | times: free_n | minus: free_price
+          endif
+          assign save2 = 0
+          if pack2 and unit.price > 0
+            assign save2 = unit.price | times: 2 | minus: pack2.price
+          endif
+          assign cuota = unit.price | times: 1.0 | divided_by: cuotas | ceil
+          assign tr_price = unit.price | times: tr_pct | divided_by: 100
+          assign tr_price = unit.price | minus: tr_price
+
+          assign tag = b.settings.etiqueta
+          if tag == blank and nuevo_s > 0 and p.published_at
+            assign pub_s = p.published_at | date: '%s' | plus: 0
+            assign age = now_s | minus: pub_s
+            if age < nuevo_s
+              assign tag = 'Nuevo'
+            endif
+          endif
+        -%}
+        <a class="lmh-card" href="{{ p.url }}" {{ b.shopify_attributes }}>
+          <span class="lmh-card__img">
+            {%- if b.settings.imagen != blank -%}{{ b.settings.imagen | image_url: width: 700 | image_tag: loading: 'lazy', alt: '', sizes: '(min-width: 990px) 30vw, 104px', widths: '240, 480, 700' }}{%- elsif p.featured_image -%}{{ p.featured_image | image_url: width: 700 | image_tag: loading: 'lazy', alt: '', sizes: '(min-width: 990px) 30vw, 104px', widths: '240, 480, 700' }}{%- endif -%}
+            {%- if tag != blank -%}<span class="lmh-card__tag">{{ tag }}</span>{%- endif -%}
+          </span>
+          <span class="lmh-card__body">
+            {%- if b.settings.volanta != blank -%}<small class="lmh-card__vol">{{ b.settings.volanta }}</small>{%- endif -%}
+            {% render 'lm-card-proof', product: p, min_reviews: s.min_resenas, garantia: s.garantia_corta %}
+            <span class="lmh-card__hook">{{ b.settings.hook | default: p.title }}</span>
+            {%- if unit.price > 0 -%}
+            <span class="lmh-card__price">
+              <span class="lmh-card__from">Desde {{ unit.price | money_without_trailing_zeros }}</span>
+              {%- if settings.pay_installments_free and cuotas > 1 -%}
+                <span class="lmh-card__cuotas"><b>{{ cuotas }} cuotas sin interés</b> de {{ cuota | money_without_trailing_zeros }}</span>
+              {%- else -%}
+                <span class="lmh-card__cuotas">{% render 'pay-copy', format: 'installments' %}</span>
+              {%- endif -%}
+              {%- if tr_pct > 0 -%}<span class="lmh-card__transfer"><b>{{ tr_price | money_without_trailing_zeros }}</b> con transferencia</span>{%- endif -%}
+            </span>
+            {%- if free_n > 0 or save2 > 0 -%}
+            <span class="lmh-card__perks">
+              {%- if free_n == 1 -%}<span>{% render 'lm-icon', name: 'truck' %}Envío gratis</span>{%- elsif free_n > 1 -%}<span>{% render 'lm-icon', name: 'truck' %}Envío gratis con el pack x{{ free_n }}</span>{%- endif -%}
+              {%- if free_n > 1 and free_save > 0 -%}
+                <span>{% render 'lm-icon', name: 'bag' %}Pack x{{ free_n }}: ahorrás {{ free_save | money_without_trailing_zeros }}</span>
+              {%- elsif save2 > 0 -%}
+                <span>{% render 'lm-icon', name: 'bag' %}Pack x2: ahorrás {{ save2 | money_without_trailing_zeros }}</span>
+              {%- endif -%}
+            </span>
+            {%- endif -%}
+            {%- else -%}
+            <span class="lmh-card__from">Muy pronto</span>
+            {%- endif -%}
+            <span class="lmh-card__go">{{ b.settings.boton | default: 'Ver el producto' }}{% render 'lm-icon', name: 'arrow' %}</span>
+          </span>
+        </a>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+  {%- endif -%}
+</div>
+</section>
+</div>
+
+{% stylesheet %}
+.lmh{padding:16px 0 36px}
+.lmh__head{display:flex;flex-direction:column;gap:14px;max-width:780px}
+.lmh h1{font-size:34px;line-height:1.05}
+.lmh__ctas{display:flex;flex-direction:column;gap:10px}
+.lmh__picks{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin-top:24px}
+.lmh-card{display:grid;grid-template-columns:104px minmax(0,1fr);gap:14px;align-items:stretch;padding:10px;border:1px solid var(--lm-line);border-radius:var(--lm-r-lg);background:#fff;color:var(--lm-ink) !important;text-decoration:none;transition:border-color .2s,transform .2s,box-shadow .2s}
+.lmh-card:hover{border-color:var(--lm-brand-500);transform:translateY(-2px);box-shadow:var(--lm-shadow-card)}
+.lmh-card__img{position:relative;display:block;min-height:120px;border-radius:var(--lm-r-md);overflow:hidden;background:var(--lm-skin)}
+.lmh-card__img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.lmh-card__tag{position:absolute;top:6px;left:6px;padding:3px 8px;border-radius:999px;background:#fff;color:var(--lm-brand-700);font-size:12px;font-weight:700;line-height:1.3;box-shadow:0 2px 8px rgba(30,26,38,.12)}
+.lmh-card__body{display:flex;flex-direction:column;justify-content:center;gap:5px;min-width:0;padding:2px 0}
+.lmh-card__vol{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--lm-brand-700)}
+.lmh-card__hook{font-size:15px;line-height:1.3;font-weight:600}
+.lmh-card__price{display:flex;flex-direction:column;gap:1px;font-variant-numeric:tabular-nums}
+.lmh-card__from{font-size:15px;font-weight:700;color:var(--lm-ink)}
+.lmh-card__cuotas{font-size:13px;line-height:1.35;color:var(--lm-ink-2)}
+.lmh-card__cuotas b{font-weight:700;color:var(--lm-brand-700)}
+.lmh-card__transfer{display:none;font-size:13px;line-height:1.35;color:var(--lm-ink-2)}
+.lmh-card__transfer b{font-weight:700;color:var(--lm-success)}
+.lmh-card__perks{display:none}
+.lmh-card__go{display:none;align-items:center;gap:8px;margin-top:6px;font-size:14px;font-weight:600;color:var(--lm-brand-700)}
+.lmh-card__go .lm-ico{width:18px;height:18px}
+.lm-cproof{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;font-size:13px;line-height:1.35;color:var(--lm-ink-2)}
+.lm-cproof b{font-weight:700;color:var(--lm-ink)}
+.lm-cproof .lm-ico{width:15px;height:15px;color:var(--lm-brand-500)}
+.lm-cproof--risk{font-weight:600;color:var(--lm-success)}
+.lm-cproof--risk .lm-ico{color:var(--lm-success)}
+.lm-cproof__more{display:none;font-weight:400}
+@media (min-width:990px){
+  .lmh{padding:48px 0 88px}
+  .lmh h1{font-size:60px;line-height:1.02}
+  .lmh__ctas{flex-direction:row}
+  .lmh__ctas .lm-btn{width:auto;padding:0 32px}
+  .lmh__picks{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:56px}
+  .lmh-card{grid-template-columns:1fr;grid-template-rows:auto 1fr;gap:0;padding:12px 12px 22px;border-radius:var(--lm-r-xl)}
+  .lmh-card__img{min-height:0;height:300px;border-radius:var(--lm-r-lg)}
+  .lmh-card__tag{top:14px;left:14px;padding:6px 12px;font-size:13px}
+  .lmh-card__body{justify-content:flex-start;gap:10px;padding:18px 10px 0}
+  .lmh-card__hook{font-size:20px;line-height:1.25}
+  .lmh-card__price{gap:3px;margin-top:2px}
+  .lmh-card__from{font-size:20px}
+  .lmh-card__cuotas,.lmh-card__transfer{font-size:14px}
+  .lmh-card__transfer{display:block}
+  .lmh-card__perks{display:flex;flex-direction:column;gap:6px;margin-top:auto;padding-top:12px;border-top:1px solid var(--lm-line);font-size:14px;line-height:1.35;color:var(--lm-ink-2)}
+  .lmh-card__perks span{display:flex;align-items:flex-start;gap:8px}
+  .lmh-card__perks .lm-ico{width:18px;height:18px;margin-top:1px;color:var(--lm-brand-500)}
+  .lmh-card__go{display:inline-flex}
+  .lm-cproof__more{display:inline}
+}
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Lumielle · Portada",
+  "tag": "div",
+  "class": "tc-section",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "select", "id": "acento", "label": "Color de acento", "default": "violeta", "options": [
+      { "value": "ciruela", "label": "Ciruela" }, { "value": "violeta", "label": "Violeta (Lumielle)" }, { "value": "salvia", "label": "Salvia" },
+      { "value": "oceano", "label": "Océano" }, { "value": "terracota", "label": "Terracota" }, { "value": "grafito", "label": "Grafito" }
+    ] },
+    { "type": "text", "id": "eyebrow", "label": "Volanta", "default": "Belleza y bienestar en casa" },
+    { "type": "text", "id": "titulo", "label": "Titular (la promesa)", "default": "Cuidarte, sin turnos ni vueltas." },
+    { "type": "text", "id": "titulo_it", "label": "Titular: parte en itálica", "default": "En casa y a tu ritmo." },
+    { "type": "textarea", "id": "texto", "label": "Bajada", "info": "Podés usar [envio_gratis_desde], [envio_fijo], [medios_de_pago] y [cuotas]." },
+    { "type": "text", "id": "cta_label", "label": "Botón principal", "default": "Ver los productos" },
+    { "type": "text", "id": "cta_url", "label": "Botón principal: link (vacío = baja a #productos)" },
+    { "type": "text", "id": "garantia_corta", "label": "Garantía corta", "default": "30 días de garantía" },
+    { "type": "header", "content": "Tarjetas: pago y prueba social" },
+    { "type": "paragraph", "content": "La prueba social sale sola de datos reales: la app de reseñas (metacampos reviews.rating y reviews.rating_count) y el metacampo de producto custom.vendidos. No se escriben puntajes a mano. Sin datos, la tarjeta muestra el pago al recibir." },
+    { "type": "number", "id": "min_resenas", "label": "Promedio y estrellas desde (reseñas propias)", "default": 10 },
+    { "type": "select", "id": "cuotas", "label": "Cuotas sin interés en la tarjeta", "default": "6", "options": [
+      { "value": "3", "label": "3 cuotas" }, { "value": "6", "label": "6 cuotas" }, { "value": "12", "label": "12 cuotas" }
+    ], "info": "Se muestran solo si Cuotas sin interés está tildado en Medios de pago activos." },
+    { "type": "range", "id": "transfer_pct", "label": "Descuento por transferencia (0 = no mostrar)", "min": 0, "max": 30, "step": 1, "unit": "%", "default": 10, "info": "Se muestra solo si Transferencia está tildada en Medios de pago activos. Tiene que coincidir con el código de descuento (TRANSFER10)." },
+    { "type": "range", "id": "nuevo_dias", "label": "Etiqueta Nuevo: días desde la publicación (0 = nunca)", "min": 0, "max": 120, "step": 10, "unit": "d", "default": 60 }
+  ],
+  "blocks": [
+    {
+      "type": "producto", "name": "Acceso a producto",
+      "settings": [
+        { "type": "product", "id": "producto", "label": "Producto" },
+        { "type": "text", "id": "volanta", "label": "Volanta (el cuidado)" },
+        { "type": "text", "id": "hook", "label": "Hook: el dolor, en una frase" },
+        { "type": "text", "id": "boton", "label": "Texto del link (escritorio)", "default": "Ver el producto" },
+        { "type": "image_picker", "id": "imagen", "label": "Foto (vacío = la del producto)" },
+        { "type": "text", "id": "etiqueta", "label": "Etiqueta sobre la foto (vacío = Nuevo los primeros días)", "info": "\"Más vendido\" solo si es real." }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Lumielle · Portada" } ]
+}
+{% endschema %}
